@@ -5,14 +5,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +29,8 @@ import com.screenmeet.sdk.ScreenMeet;
 import com.screenmeet.sdk.ScreenMeetUI;
 import com.screenmeet.sdk.Session;
 
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 
 import static com.screenmeet.sdk.Session.LifecycleListener.InactiveReason.DISCONNECT_LOCAL;
@@ -39,7 +47,10 @@ import static com.screenmeet.sdk.Session.State.STREAMING;
 public class MainActivity extends AppCompatActivity {
 
     private EditText codeEt;
-    private Button connectBtn, disconnectBtn, terminateBtn, pauseBtn, resumeBtn, dialogBtn, requestBtn;
+
+    private Button connectBtn, disconnectBtn, terminateBtn,
+            pauseBtn, resumeBtn, dialogBtn, requestBtn,
+            obfuscateNewBtn, deObfuscateNewBtn, navigateToWebView;
 
     private TextView resultTv, sessionTv,
             featuresTittleTv, sessionFeaturesTv,
@@ -47,12 +58,14 @@ public class MainActivity extends AppCompatActivity {
             connectionTv, participantsLabelTv, participantsTv;
 
     private ProgressBar progressBar;
-    private View mockView;
 
     private Handler handler;
 
     private Session.LifecycleListener lifecycleListener;
     private Session.EventListener eventListener;
+
+    private View mockView;
+    private final ArrayList<View> viewToObfuscate = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +168,40 @@ public class MainActivity extends AppCompatActivity {
            public void onCancel() {
            }
        }));
+
+        obfuscateNewBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View obfuscatedView = constructObfuscatedView();
+
+                ((ViewGroup)findViewById(R.id.obfuscateContainer)).addView(obfuscatedView,
+                        new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                viewToObfuscate.add(obfuscatedView);
+                ScreenMeet.appStreamVideoSource().setConfidential(obfuscatedView.findViewWithTag("tv"));
+            }
+        });
+
+        deObfuscateNewBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               if(!viewToObfuscate.isEmpty()){
+                   View view = viewToObfuscate.get(viewToObfuscate.size() - 1);
+                   ScreenMeet.appStreamVideoSource().unsetConfidential(view.findViewWithTag("tv"));
+                   viewToObfuscate.remove(view);
+                   ((ViewGroup)findViewById(R.id.obfuscateContainer)).removeView(view);
+
+                   ScreenMeet.appStreamVideoSource().setConfidential(view);
+                   ScreenMeet.appStreamVideoSource().unsetConfidential(view);
+               }
+            }
+        });
+
+        navigateToWebView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, WebViewActivity.class));
+            }
+        });
     }
 
     private void connectSession(String code){
@@ -233,6 +280,11 @@ public class MainActivity extends AppCompatActivity {
         updateParticipants(session.participants());
 
         mockView.setVisibility(View.VISIBLE);
+
+        obfuscateNewBtn.setVisibility(View.VISIBLE);
+        deObfuscateNewBtn.setVisibility(View.VISIBLE);
+
+        navigateToWebView.setVisibility(View.VISIBLE);
     }
 
     private void initView(){
@@ -263,6 +315,11 @@ public class MainActivity extends AppCompatActivity {
         requestBtn = findViewById(R.id.requestBtn);
 
         mockView = findViewById(R.id.mockView);
+
+        obfuscateNewBtn = findViewById(R.id.obfuscateNew);
+        deObfuscateNewBtn = findViewById(R.id.deobfuscateNew);
+
+        navigateToWebView = findViewById(R.id.navigateToWebView);
     }
 
     private void showSessionFailure(){
@@ -289,6 +346,11 @@ public class MainActivity extends AppCompatActivity {
         participantsTv.setVisibility(View.GONE);
 
         mockView.setVisibility(View.GONE);
+
+        obfuscateNewBtn.setVisibility(View.GONE);
+        deObfuscateNewBtn.setVisibility(View.GONE);
+
+        navigateToWebView.setVisibility(View.GONE);
     }
 
     private void showSessionFailure(int errorCode, String error){
@@ -441,10 +503,39 @@ public class MainActivity extends AppCompatActivity {
                 int color = ((int)(Math.random()*16777215)) | (0xFF << 24);
                 mockView.setBackgroundColor(color);
             } finally {
-                handler.postDelayed(mockUiUpdate, 1000);
+                handler.postDelayed(mockUiUpdate, 500);
             }
         }
     };
+
+    private View constructObfuscatedView(){
+        MainActivity context = MainActivity.this;
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+
+        TextView view = new TextView(context);
+        view.setTag("tv");
+        view.setText("Secret text " + viewToObfuscate.size());
+        int textSize = new Random().nextInt(25) + 11;
+        view.setTextSize(textSize);
+        int measuredSize = textSize * (view.getText().length() + 5);
+
+        Space spaceLeft = new Space(context);
+        Space spaceRight = new Space(context);
+
+        LinearLayout container = new LinearLayout(context);
+        container.addView(spaceLeft, new ViewGroup.LayoutParams(width - measuredSize, ViewGroup.LayoutParams.MATCH_PARENT));
+        container.addView(view, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        container.addView(spaceRight, new ViewGroup.LayoutParams(width - measuredSize, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        HorizontalScrollView scrollView = new HorizontalScrollView(context);
+        scrollView.setHorizontalScrollBarEnabled(false);
+        scrollView.addView(container, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        return scrollView;
+    }
 
     private String getStateChangeMessage(@Session.State int oldState, @Session.State int newState, String reason){
         return "Session state changed from " +
@@ -470,5 +561,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return s;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        lifecycleListener = null;
+        eventListener = null;
+        mockUiUpdate = null;
     }
 }

@@ -9,8 +9,8 @@ class SupportApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        //TODO Provide your API token below
         val configuration = ScreenMeet.Configuration(null)
-
         val defaultConfig = "API token" + configuration.apiToken() +
                 " httpTimeout" + configuration.httpTimeout() +
                 " httpNumRetry" + configuration.httpNumRetry() +
@@ -32,7 +32,6 @@ class SupportApplication : Application() {
                 .webRtcTimeout(60000)
                 .webRtcNumRetries(5)
                 .verboseLogging(true)
-
         ScreenMeet.init(this, configuration)
         registerActivityLifecycleCallbacks(ScreenMeet.activityLifecycleCallback())
     }

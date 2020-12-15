@@ -1,10 +1,13 @@
 package com.screenmeet.sdkkotlindemo
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
+import android.util.DisplayMetrics
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -15,22 +18,24 @@ import com.screenmeet.sdk.Session.EventListener.ParticipantAction
 import com.screenmeet.sdk.Session.LifecycleListener
 import com.screenmeet.sdk.Session.LifecycleListener.*
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.random.Random
 
+@Suppress("MoveVariableDeclarationIntoWhen", "UNUSED_ANONYMOUS_PARAMETER")
 @SuppressLint("SetTextI18n")
-@Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity() {
 
-    private var handler: Handler? = null
+    private lateinit var handler: Handler
+    private lateinit var lifecycleListener: LifecycleListener
+    private lateinit var eventListener: Session.EventListener
 
-    private var lifecycleListener: LifecycleListener? = null
-    private var eventListener: Session.EventListener? = null
+    private val viewToObfuscate = ArrayList<View>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        enableButtons()
 
         handler = Handler()
+        enableButtons()
 
         val frameProcessor = ScreenMeet.localVideoSource().frameProcessor()
         ScreenMeet.localVideoSource().frameProcessor(frameProcessor)
@@ -56,25 +61,26 @@ class MainActivity : AppCompatActivity() {
                 showNetworkConnected()
             }
         }
-
         eventListener = Session.EventListener { participant, i ->
             when (i) {
                 ParticipantAction.ADDED, ParticipantAction.REMOVED -> {
-                    ScreenMeet.session()?.let {
-                        updateParticipants(it.participants())
+                    val s = ScreenMeet.session()
+                    s?.let {
+                        updateParticipants(s.participants())
                     }
                 }
             }
         }
-        handler!!.post(mockUiUpdate)
+
+        handler.post(mockUiUpdate)
     }
 
     private fun enableButtons() {
-        connectBtn.setOnClickListener { v: View? ->
+        connectBtn.setOnClickListener {
             val code = codeEt.text.toString()
             connectSession(code)
         }
-        requestBtn.setOnClickListener { v: View? ->
+        requestBtn.setOnClickListener {
             ScreenMeetUI.showAppMirrorPermissionDialog(object : PermissionResponseListener {
                 override fun onAllow() {
                     Toast.makeText(this@MainActivity, "App Mirroring allowed", Toast.LENGTH_SHORT).show()
@@ -89,17 +95,16 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
-        disconnectBtn.setOnClickListener { v: View? -> ScreenMeet.disconnect(false) }
-        terminateBtn.setOnClickListener { v: View? -> ScreenMeet.disconnect(true) }
-        pauseBtn.setOnClickListener { v: View? ->
-            if (ScreenMeet.session() != null) {
-                ScreenMeet.session()!!.pause()
-            }
+
+        disconnectBtn.setOnClickListener { ScreenMeet.disconnect(false) }
+        terminateBtn.setOnClickListener { ScreenMeet.disconnect(true) }
+        pauseBtn.setOnClickListener {
+            ScreenMeet.session()?.pause()
         }
-        resumeBtn.setOnClickListener { v: View? ->
+        resumeBtn.setOnClickListener {
             ScreenMeet.session()?.resume()
         }
-        dialogBtn.setOnClickListener { v: View? ->
+        dialogBtn.setOnClickListener {
             ScreenMeetUI.showSessionCodeDialog(object : StringResponseListener {
                 override fun onSuccess(s: String) {
                     codeEt.setText(s)
@@ -108,6 +113,26 @@ class MainActivity : AppCompatActivity() {
                 override fun onCancel() {}
             })
         }
+        obfuscateNewBtn.setOnClickListener {
+            val obfuscatedView = constructObfuscatedView()
+            val layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            findViewById<ViewGroup>(R.id.obfuscateContainer).addView(obfuscatedView, layoutParams)
+            viewToObfuscate.add(obfuscatedView)
+
+            ScreenMeet.appStreamVideoSource().setConfidential(obfuscatedView.findViewWithTag("tv"))
+        }
+        deObfuscateNewBtn.setOnClickListener {
+            if (viewToObfuscate.isNotEmpty()) {
+                val view = viewToObfuscate[viewToObfuscate.size - 1]
+                viewToObfuscate.remove(view)
+                findViewById<ViewGroup>(R.id.obfuscateContainer).removeView(view)
+
+                ScreenMeet.appStreamVideoSource().unsetConfidential(view.findViewWithTag("tv"))
+                ScreenMeet.appStreamVideoSource().setConfidential(view)
+                ScreenMeet.appStreamVideoSource().unsetConfidential(view)
+            }
+        }
+        navigateToWebView.setOnClickListener { startActivity(Intent(this@MainActivity, WebViewActivity::class.java)) }
     }
 
     private fun connectSession(code: String) {
@@ -127,7 +152,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        ScreenMeet.session()?.let {
+        ScreenMeet.session()?.let{
             ScreenMeet.unregisterLifecycleListener(lifecycleListener)
             ScreenMeet.unregisterEventListener(eventListener)
         }
@@ -135,14 +160,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
         ScreenMeet.session()?.let {
-            ScreenMeet.unregisterLifecycleListener(lifecycleListener)
-            ScreenMeet.unregisterEventListener(eventListener)
+            ScreenMeet.registerLifecycleListener(lifecycleListener)
+            ScreenMeet.registerEventListener(eventListener)
             showSessionConnected(it)
-        } ?: run {
-            showSessionFailure()
-        }
+        } ?: showSessionFailure()
     }
 
     private fun showSessionConnected(session: Session) {
@@ -152,7 +174,9 @@ class MainActivity : AppCompatActivity() {
         resultTv.visibility = View.GONE
         connectProgress.visibility = View.GONE
 
-        when (session.lifecycleState()) {
+
+        @Session.State val state = session.lifecycleState()
+        when (state) {
             Session.State.STREAMING -> showStreamingState()
             Session.State.PAUSED -> showPausedState()
             Session.State.INACTIVE -> showInactiveState()
@@ -168,10 +192,12 @@ class MainActivity : AppCompatActivity() {
         if (session.isConnected) {
             showNetworkConnected()
         } else showNetworkDisconnected()
-
         updateParticipants(session.participants())
 
         mockView.visibility = View.VISIBLE
+        obfuscateNewBtn.visibility = View.VISIBLE
+        deObfuscateNewBtn.visibility = View.VISIBLE
+        navigateToWebView.visibility = View.VISIBLE
     }
 
     private fun showSessionFailure() {
@@ -191,14 +217,16 @@ class MainActivity : AppCompatActivity() {
         stateReasonTv.visibility = View.GONE
         participantsLabelTv.visibility = View.GONE
         participantsTv.visibility = View.GONE
+        obfuscateNewBtn.visibility = View.GONE
+        deObfuscateNewBtn.visibility = View.GONE
+        navigateToWebView.visibility = View.GONE
         mockView.visibility = View.GONE
     }
 
     private fun showSessionFailure(errorCode: Int, error: String) {
         showSessionFailure()
         resultTv.setTextColor(Color.RED)
-        val errorText = "$errorCode $error"
-        resultTv.text = errorText
+        resultTv.text =  "$errorCode $error"
         resultTv.visibility = View.VISIBLE
     }
 
@@ -215,72 +243,68 @@ class MainActivity : AppCompatActivity() {
     private fun updateParticipants(participants: Set<Participant>) {
         val participantsText = "Participants active: " + participants.size
         participantsLabelTv.text = participantsText
-        participantsLabelTv.visibility = View.VISIBLE
 
         val participantsString = StringBuilder()
         for (p in participants) {
             participantsString.append("Participant ").append(p.name()).append(" ").append(p.id()).append("\n")
         }
         participantsTv.text = participantsString
+        participantsLabelTv.visibility = View.VISIBLE
         participantsTv.visibility = View.VISIBLE
     }
 
     private fun showNetworkDisconnected() {
+        connectionTv.visibility = View.VISIBLE
         connectionTv.text = "DISCONNECTED"
         connectionTv.setTextColor(Color.RED)
-        connectionTv.visibility = View.VISIBLE
     }
 
     private fun showNetworkConnected() {
+        connectionTv.visibility = View.VISIBLE
         connectionTv.text = "CONNECTED"
         connectionTv.setTextColor(Color.GREEN)
-        connectionTv.visibility = View.VISIBLE
     }
 
     private fun showStreamingState() {
         pauseBtn.visibility = View.VISIBLE
         resumeBtn.visibility = View.GONE
         stateLabelTv.visibility = View.VISIBLE
+        stateTv.visibility = View.VISIBLE
         stateTv.text = "STREAMING"
         stateTv.setTextColor(Color.GREEN)
-        stateTv.visibility = View.VISIBLE
     }
 
     private fun showStreamingState(@Session.State oldState: Int,
                                    @StreamingReason reasonCode: Int) {
         showStreamingState()
-
         var reason = "Unknown"
         if (reasonCode == StreamingReason.SESSION_RESUMED) {
             reason = "SESSION_RESUMED"
         }
-
+        stateReasonTv.visibility = View.VISIBLE
         val stateChangeMessage = getStateChangeMessage(oldState, Session.State.STREAMING, reason)
         stateReasonTv.text = stateChangeMessage
-        stateReasonTv.visibility = View.VISIBLE
     }
 
     private fun showPausedState() {
         pauseBtn.visibility = View.GONE
         resumeBtn.visibility = View.VISIBLE
         stateLabelTv.visibility = View.VISIBLE
+        stateTv.visibility = View.VISIBLE
         stateTv.text = "PAUSED"
         stateTv.setTextColor(Color.YELLOW)
-        stateTv.visibility = View.VISIBLE
     }
 
     private fun showPausedState(@Session.State oldState: Int,
                                 @PauseReason reasonCode: Int) {
         showPausedState()
-
         var reason = "Unknown"
         if (reasonCode == PauseReason.SESSION_PAUSED) {
             reason = "SESSION_PAUSED"
         }
-
+        stateReasonTv.visibility = View.VISIBLE
         val stateChangeMessage = getStateChangeMessage(oldState, Session.State.PAUSED, reason)
         stateReasonTv.text = stateChangeMessage
-        stateReasonTv.visibility = View.VISIBLE
     }
 
     private fun showInactiveState() {
@@ -295,9 +319,9 @@ class MainActivity : AppCompatActivity() {
         sessionFeaturesTv.visibility = View.GONE
         featuresTittleTv.visibility = View.GONE
         stateLabelTv.visibility = View.VISIBLE
+        stateTv.visibility = View.VISIBLE
         stateTv.text = "INACTIVE"
         stateTv.setTextColor(Color.RED)
-        stateTv.visibility = View.VISIBLE
         participantsLabelTv.visibility = View.GONE
         participantsTv.visibility = View.GONE
         mockView.visibility = View.GONE
@@ -306,28 +330,49 @@ class MainActivity : AppCompatActivity() {
     private fun showInactiveState(@Session.State oldState: Int,
                                   @InactiveReason reasonCode: Int) {
         showInactiveState()
-
         var reason = "Unknown"
         when (reasonCode) {
             InactiveReason.DISCONNECT_LOCAL -> reason = "DISCONNECT_LOCAL"
             InactiveReason.TERMINATED_LOCAL -> reason = "TERMINATED_LOCAL"
             InactiveReason.TERMINATED_SERVER -> reason = "TERMINATED_SERVER"
         }
-
+        stateReasonTv.visibility = View.VISIBLE
         val stateChangeMessage = getStateChangeMessage(oldState, Session.State.INACTIVE, reason)
         stateReasonTv.text = stateChangeMessage
-        stateReasonTv.visibility = View.VISIBLE
     }
 
-    private val mockUiUpdate: Runnable = object : Runnable {
+    private var mockUiUpdate: Runnable = object : Runnable {
         override fun run() {
             try {
                 val color = (Math.random() * 16777215).toInt() or (0xFF shl 24)
                 mockView.setBackgroundColor(color)
             } finally {
-                handler!!.postDelayed(this, 1000)
+                handler.postDelayed(this, 500)
             }
         }
+    }
+
+    private fun constructObfuscatedView(): View {
+        val context = this@MainActivity
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+
+        val view = TextView(context)
+        view.tag = "tv"
+        view.text = "Secret text " + viewToObfuscate.size
+        val textSize = Random.nextInt(25) + 11
+        view.textSize = textSize.toFloat()
+        val measuredSize = textSize * (view.text.length + 5)
+        val spaceLeft = Space(context)
+        val spaceRight = Space(context)
+        val container = LinearLayout(context)
+        container.addView(spaceLeft, ViewGroup.LayoutParams(displayMetrics.widthPixels - measuredSize, ViewGroup.LayoutParams.MATCH_PARENT))
+        container.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        container.addView(spaceRight, ViewGroup.LayoutParams(displayMetrics.widthPixels - measuredSize, ViewGroup.LayoutParams.MATCH_PARENT))
+        val scrollView = HorizontalScrollView(context)
+        scrollView.isHorizontalScrollBarEnabled = false
+        scrollView.addView(container, ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        return scrollView
     }
 
     private fun getStateChangeMessage(@Session.State oldState: Int, @Session.State newState: Int, reason: String): String {

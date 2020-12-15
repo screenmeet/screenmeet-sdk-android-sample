@@ -11,6 +11,7 @@ public class SupportApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        //TODO Provide your API token below
         ScreenMeet.Configuration configuration = new ScreenMeet.Configuration(null);
 
         String defaultConfig = "API token" + configuration.apiToken() +
