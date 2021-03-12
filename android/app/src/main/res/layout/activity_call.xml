@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <org.webrtc.SurfaceViewRenderer
+        android:id="@+id/activeSpeakerRenderer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/participantsRecycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="@dimen/marginStart"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.85" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline">
+
+        <ImageButton
+            android:id="@+id/micro"
+            android:layout_height="@dimen/button_size"
+            android:layout_width="@dimen/button_size"
+            android:src="@drawable/mic"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:padding="@dimen/button_padding"
+            android:background="@drawable/rounded_button"/>
+
+        <ImageButton
+            android:id="@+id/camera"
+            android:layout_height="@dimen/button_size"
+            android:layout_width="@dimen/button_size"
+            android:src="@drawable/videocam"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:padding="@dimen/button_padding"
+            android:background="@drawable/rounded_button"/>
+
+        <ImageButton
+            android:id="@+id/screen"
+            android:layout_height="@dimen/button_size"
+            android:layout_width="@dimen/button_size"
+            android:src="@drawable/screenshot"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:padding="@dimen/button_padding"
+            android:background="@drawable/rounded_button"/>
+
+        <ImageButton
+            android:id="@+id/hangUp"
+            android:layout_height="@dimen/button_size"
+            android:layout_width="@dimen/button_size"
+            android:src="@drawable/call_end"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:padding="@dimen/button_padding"
+            android:background="@drawable/rounded_button"/>
+    </LinearLayout>
+
+        <include
+            android:id="@+id/localRenderer"
+            layout="@layout/partcipant_layout"
+            android:visibility="gone"
+            android:layout_width="135dp"
+            android:layout_height="240dp"
+            android:layout_marginStart="@dimen/button_padding"
+            app:layout_constraintBottom_toTopOf="@+id/guideline"
+            app:layout_constraintEnd_toStartOf="@+id/guideline3"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
+
+    <ImageView
+        android:id="@+id/connectionLoss"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@+id/guideline3"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/activeSpeakerRenderer"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/wifi_off" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

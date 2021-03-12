@@ -1,7 +1,7 @@
 *.iml
 .gradle
 /local.properties
-/.idea
+/.idea/*
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -13,3 +13,6 @@
 /captures
 .externalNativeBuild
 .cxx
+node_modules
+/android/.idea
+yarn.lock

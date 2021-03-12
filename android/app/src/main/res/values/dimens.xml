@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="marginStart">10dp</dimen>
+    <dimen name="button_size">55dp</dimen>
+    <dimen name="button_padding">10dp</dimen>
+    <dimen name="minimum_btn_size">24dp</dimen>
+</resources>

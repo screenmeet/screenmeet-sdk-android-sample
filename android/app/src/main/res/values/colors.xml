@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#f6a255</color>
+    <color name="colorPrimaryDark">#f27c0d</color>
+    <color name="colorAccent">#ffb640</color>
+    <color name="disabled_button">#363137</color>
+    <color name="loading_button">#919191</color>
+    <color name="enabled_button">#2784C4</color>
+    <color name="bright_red">#D01A19</color>
+</resources>
