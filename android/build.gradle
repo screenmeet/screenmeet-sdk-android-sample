@@ -19,10 +19,10 @@ buildscript {
 
 allprojects {
     repositories {
-        maven {
+       maven {
             url "https://nexus.screenmeet.com/repository/maven-snapshots/"
         }
-        maven {
+         maven {
             url "https://nexus.screenmeet.com/repository/maven-releases/"
         }
         maven {

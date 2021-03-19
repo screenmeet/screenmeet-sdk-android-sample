@@ -7,109 +7,164 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.screenmeet.sdk.Identity;
 import com.screenmeet.sdk.Participant;
 import com.screenmeet.sdk.ScreenMeet;
 import com.screenmeet.sdk.SessionEventListener;
 import com.screenmeet.sdkdemo.databinding.ActivityCallBinding;
 import com.screenmeet.sdkdemo.recycler.ParticipantsAdapter;
 
-import org.jetbrains.annotations.NotNull;
 import org.webrtc.EglBase;
-import org.webrtc.RendererCommon;
+import org.webrtc.VideoFrame;
 import org.webrtc.VideoTrack;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class CallActivity extends AppCompatActivity {
+
+    private final String TAG = "ScreenMeet SDK";
 
     private ActivityCallBinding binding;
     private ParticipantsAdapter participantsAdapter;
     private EglBase eglBase;
+
+    private VideoTrack localVideoTrack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         eglBase = EglBase.create();
-
         binding = ActivityCallBinding.inflate(getLayoutInflater());
 
-        binding.activeSpeakerRenderer.init(EglBase.create().getEglBaseContext(), null);
+        //The same eglContext as a capturing one should be used to preview camera
+        EglBase.Context eglBaseContext = Objects.requireNonNull(ScreenMeet.getEglContext());
+        binding.activeSpeakerRenderer.surfaceViewRenderer.init(eglBaseContext, null);
+        binding.localRenderer.surfaceViewRenderer.init(eglBaseContext, null);
+        binding.localRenderer.surfaceViewRenderer.setZOrderMediaOverlay(true);
 
         setContentView(binding.getRoot());
     }
 
     private final SessionEventListener eventListener = new SessionEventListener() {
         @Override
-        public void onParticipantJoined(@NotNull Participant participant) {
+        public void onParticipantJoined(@NonNull Participant participant) {
+            Log.d(TAG, "onParticipantJoined");
             participantsAdapter.add(participant);
+            if(!participantsAdapter.activeSpeakerPresent()){
+               switchActiveSpeaker(participant);
+            }
         }
 
         @Override
-        public void onParticipantLeft(@NotNull Participant participant) {
+        public void onParticipantLeft(@NonNull Participant participant) {
+            Log.d(TAG, "onParticipantLeft");
+            boolean wasActiveSpeaker = participantsAdapter.isActiveSpeaker(participant);
             participantsAdapter.remove(participant);
+            if(wasActiveSpeaker){
+                if(!ScreenMeet.participants().isEmpty()){
+                    Participant p = ScreenMeet.participants().get(0);
+                    switchActiveSpeaker(p);
+                } else activeSpeakerAbsent();
+            }
         }
 
         @Override
-        public void onParticipantMediaStateChanged(@NotNull Participant participant) {
-            participantsAdapter.update(participant);
+        public void onParticipantMediaStateChanged(@NonNull Participant participant) {
+            Log.d(TAG, "onParticipantMediaStateChanged");
+            if(participantsAdapter.isActiveSpeaker(participant)) {
+                displayActiveSpeaker(participant);
+            }  else participantsAdapter.update(participant);
         }
 
         @Override
-        public void onLocalVideoCreated(@NotNull VideoTrack videoTrack) {
+        public void onLocalVideoCreated(@NonNull VideoTrack videoTrack) {
+            Log.d(TAG, "onLocalVideoCreated");
             applyControlsState();
+
+            renderLocalVideoTrack(videoTrack);
         }
 
         @Override
         public void onLocalVideoStopped() {
+            Log.d(TAG, "onLocalVideoStopped");
             applyControlsState();
+
+            renderLocalVideoTrack(null);
         }
 
         @Override
         public void onLocalAudioCreated() {
+            Log.d(TAG, "onLocalAudioCreated");
             applyControlsState();
         }
 
         @Override
         public void onLocalAudioStopped() {
+            Log.d(TAG, "onLocalAudioStopped");
             applyControlsState();
         }
 
         @Override
-        public void onParticipantVideoTrackCreated(@NotNull Participant participant) {
-            participantsAdapter.update(participant);
+        public void onParticipantVideoTrackCreated(@NonNull Participant participant) {
+            Log.d(TAG, "onParticipantVideoTrackCreated");
+            if(participantsAdapter.isActiveSpeaker(participant)){
+                displayActiveSpeaker(participant);
+            } else participantsAdapter.update(participant);
         }
 
         @Override
-        public void onParticipantAudioTrackCreated(@NotNull Participant participant) {
-            participantsAdapter.update(participant);
+        public void onParticipantAudioTrackCreated(@NonNull Participant participant) {
+            Log.d(TAG, "onParticipantAudioTrackCreated");
         }
 
         @Override
-        public void onConnectionStateChanged(@NotNull ScreenMeet.ConnectionState connectionState) {
+        public void onConnectionStateChanged(@NonNull ScreenMeet.ConnectionState connectionState) {
+            Log.d(TAG, "onConnectionStateChanged");
             if(connectionState == ScreenMeet.ConnectionState.CONNECTED){
                 binding.connectionLoss.setVisibility(View.GONE);
 
                 //TODO TBD. Currently session state is restored after some delay. Would be fixed
-                new Handler().postDelayed(() -> loadState(), 1000);
-
+                new Handler().postDelayed(() -> loadState(), 2000);
             } else  binding.connectionLoss.setVisibility(View.VISIBLE);
         }
 
         @Override
-        public void onActiveSpeakerChanged(@NotNull Participant participant) {
-
+        public void onActiveSpeakerChanged(@NonNull Participant participant) {
+            Log.d(TAG, "onActiveSpeakerChanged");
+            switchActiveSpeaker(participant);
         }
 
         @Override
-        public void onSessionEnded(@NotNull String s) {
+        public void onSessionEnded(@NonNull String s) {
+            Log.d(TAG, "onActiveSpeakerChanged");
             sessionEnded();
-            finish();
         }
     };
+
+    void renderLocalVideoTrack(@Nullable VideoTrack videoTrack){
+        if (videoTrack != null) {
+            if (localVideoTrack != null) {
+                localVideoTrack.removeSink(binding.localRenderer.surfaceViewRenderer);
+            }
+
+            localVideoTrack = videoTrack;
+            localVideoTrack.setEnabled(true);
+            localVideoTrack.addSink(videoFrame -> {
+                VideoFrame frame = new VideoFrame(videoFrame.getBuffer(), 0, videoFrame.getTimestampNs());
+                binding.localRenderer.surfaceViewRenderer.onFrame(frame);
+            });
+        } else {
+            localVideoTrack = null;
+            binding.localRenderer.surfaceViewRenderer.clearImage();
+        }
+    }
 
     @Override
     protected void onResume() {
@@ -123,89 +178,99 @@ public class CallActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        if (participantsAdapter != null) {
+            participantsAdapter.dispose();
+        }
         ScreenMeet.unregisterEventListener(eventListener);
     }
 
     private void loadState(){
         ArrayList<Participant> participants = ScreenMeet.participants();
-        if(!participants.isEmpty()){
-
-            participantsAdapter = new ParticipantsAdapter(participants, eglBase);
-            binding.participantsRecycler.setAdapter(participantsAdapter);
-            binding.participantsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        if (participantsAdapter != null) {
+            participantsAdapter.dispose();
         }
+
+        participantsAdapter = new ParticipantsAdapter(participants, eglBase);
+        binding.participantsRecycler.setAdapter(participantsAdapter);
+        binding.participantsRecycler.setLayoutManager(new LinearLayoutManager(this));
+
+        if(!participants.isEmpty()){
+            Participant activeSpeaker = participantsAdapter.getActiveSpeaker();
+            if (activeSpeaker != null) {
+                switchActiveSpeaker(activeSpeaker);
+            } else switchActiveSpeaker(participants.get(0));
+        } else activeSpeakerAbsent();
+
+        renderLocalVideoTrack(ScreenMeet.localVideoTrack());
 
         applyControlsState();
         setButtonBackgroundColor(binding.hangUp, R.color.bright_red);
     }
 
     private void sessionEnded(){
-
+        finish();
     }
 
     private void enableButtons(){
         binding.micro.setOnClickListener(v -> {
             switchButton(binding.micro, true, true);
-            ScreenMeet.toggleLocalAudio();
+            if(ScreenMeet.localMediaState().isAudioActive()){
+                ScreenMeet.stopAudioSharing();
+            } else ScreenMeet.shareAudio();
         });
 
         binding.camera.setOnClickListener(v -> {
             switchButton(binding.camera, true, true);
-            ScreenMeet.VideoSourceType sourceType = ScreenMeet.currentVideoSource();
-            if(sourceType != null){
-                switch (sourceType){
-                    case BACK_CAMERA:
-                    case FRONT_CAMERA:
-                        ScreenMeet.toggleLocalVideo();
-                        break;
-                    case SCREEN:
-                        ScreenMeet.changeVideoSource(ScreenMeet.VideoSourceType.FRONT_CAMERA);
-                        break;
-                }
-            } else ScreenMeet.changeVideoSource(ScreenMeet.VideoSourceType.SCREEN);
+            switch (ScreenMeet.localMediaState().getVideoState()){
+                case BACK_CAMERA:
+                case FRONT_CAMERA:
+                    ScreenMeet.stopVideoSharing();
+                    break;
+                case SCREEN:
+                case NONE:
+                    ScreenMeet.shareCamera(true);
+                    break;
+            }
         });
 
         binding.screen.setOnClickListener(v -> {
             switchButton(binding.screen, true, true);
-            ScreenMeet.VideoSourceType sourceType = ScreenMeet.currentVideoSource();
-            if(sourceType != null){
-                switch (sourceType){
-                    case BACK_CAMERA:
-                    case FRONT_CAMERA:
-                        ScreenMeet.changeVideoSource(ScreenMeet.VideoSourceType.SCREEN);
-                        break;
-                    case SCREEN:
-                        ScreenMeet.toggleLocalVideo();
-                        break;
-                }
-            } else ScreenMeet.changeVideoSource(ScreenMeet.VideoSourceType.SCREEN);
+            switch (ScreenMeet.localMediaState().getVideoState()){
+                case BACK_CAMERA:
+                case FRONT_CAMERA:
+                case NONE:
+                    ScreenMeet.shareScreen();
+                    break;
+                case SCREEN:
+                    ScreenMeet.stopVideoSharing();
+                    break;
+            }
         });
 
-        binding.hangUp.setOnClickListener(v -> {
-            ScreenMeet.disconnect();
-        });
+        binding.hangUp.setOnClickListener(v -> ScreenMeet.disconnect());
     }
 
     private void applyControlsState(){
-        boolean videoActive = ScreenMeet.isVideoActive();
-        Log.d("applyControlsState", "video active " + videoActive);
-
-        ScreenMeet.VideoSourceType sourceType = ScreenMeet.currentVideoSource();
-        if (sourceType != null) {
-            switch (sourceType) {
-                case SCREEN:
-                    switchButton(binding.screen, false, videoActive);
-                    switchButton(binding.camera, false, false);
-                    break;
-                case FRONT_CAMERA:
-                case BACK_CAMERA:
-                    switchButton(binding.camera, false, videoActive);
-                    switchButton(binding.screen, false, false);
-                    break;
-            }
-        } else {
-            switchButton(binding.camera, false, false);
-            switchButton(binding.screen, false, false);
+        ScreenMeet.VideoState sourceType = ScreenMeet.localMediaState().getVideoState();
+        switch (sourceType) {
+            case SCREEN:
+                switchButton(binding.screen, false, true);
+                switchButton(binding.camera, false, false);
+                binding.localRenderer.cameraButton.setImageResource(R.drawable.screenshot);
+                break;
+            case FRONT_CAMERA:
+            case BACK_CAMERA:
+                switchButton(binding.screen, false, false);
+                switchButton(binding.camera, false, true);
+                binding.camera.setImageResource(R.drawable.videocam);
+                binding.localRenderer.cameraButton.setImageResource(R.drawable.videocam);
+                break;
+            case NONE:
+                switchButton(binding.camera, false, false);
+                switchButton(binding.screen, false, false);
+                binding.camera.setImageResource(R.drawable.videocam_off);
+                binding.localRenderer.cameraButton.setImageResource(R.drawable.videocam_off);
+                break;
         }
 
         ScreenMeet.ConnectionState connectionState = ScreenMeet.connectionState();
@@ -213,17 +278,9 @@ public class CallActivity extends AppCompatActivity {
             binding.connectionLoss.setVisibility(View.GONE);
         } else  binding.connectionLoss.setVisibility(View.VISIBLE);
 
-        if(videoActive) {
-            binding.camera.setImageResource(R.drawable.videocam);
-            if(sourceType == ScreenMeet.VideoSourceType.SCREEN) {
-                binding.localRenderer.cameraButton.setImageResource(R.drawable.screenshot);
-            } else binding.localRenderer.cameraButton.setImageResource(R.drawable.videocam);
-        } else {
-            binding.camera.setImageResource(R.drawable.videocam_off);
-            binding.localRenderer.cameraButton.setImageResource(R.drawable.videocam_off);
-        }
+        binding.localRenderer.nameTv.setText(R.string.me);
 
-        boolean audioActive = ScreenMeet.isAudioActive();
+        boolean audioActive = ScreenMeet.localMediaState().isAudioActive();
         switchButton(binding.micro, false, audioActive);
         if(audioActive) {
             binding.micro.setImageResource(R.drawable.mic);
@@ -248,5 +305,67 @@ public class CallActivity extends AppCompatActivity {
     private void setButtonBackgroundColor(ImageButton button, int colorRes){
         GradientDrawable background = (GradientDrawable) button.getBackground();
         background.setColor(getResources().getColor(colorRes));
+    }
+
+    private void switchActiveSpeaker(Participant participant){
+        Participant activeSpeakerCurrent = participantsAdapter.getActiveSpeaker();
+        if (activeSpeakerCurrent != null) {
+            activeSpeakerCurrent.clearSinks();
+        }
+
+        Participant activeSpeaker = participantsAdapter.updateActiveSpeaker(participant);
+        if(activeSpeaker != null) {
+            displayActiveSpeaker(activeSpeaker);
+        }
+    }
+
+    private void displayActiveSpeaker(Participant participant){
+        participant.clearSinks();
+
+        binding.activeSpeakerRenderer.nameTv.setText(participant.getIdentity().getName());
+        binding.activeSpeakerRenderer.nameTv.setVisibility(View.VISIBLE);
+
+        if(participant.getIdentity().getRole() == Identity.Role.HOST){
+            binding.activeSpeakerRenderer.hostImage.setVisibility(View.VISIBLE);
+        } else binding.activeSpeakerRenderer.hostImage.setVisibility(View.GONE);
+
+        binding.activeSpeakerRenderer.microButton.setVisibility(View.VISIBLE);
+        if(participant.getMediaState().isAudioActive()){
+            binding.activeSpeakerRenderer.microButton.setImageResource(R.drawable.mic);
+        } else binding.activeSpeakerRenderer.microButton.setImageResource(R.drawable.mic_off);
+
+        binding.activeSpeakerRenderer.cameraButton.setVisibility(View.VISIBLE);
+        switch (participant.getMediaState().getVideoState()){
+            case BACK_CAMERA:
+            case FRONT_CAMERA:
+                binding.activeSpeakerRenderer.cameraButton.setImageResource(R.drawable.videocam);
+                break;
+            case SCREEN:
+                binding.activeSpeakerRenderer.cameraButton.setImageResource(R.drawable.screenshot);
+                break;
+            case NONE:
+                binding.activeSpeakerRenderer.cameraButton.setImageResource(R.drawable.videocam_off);
+        }
+
+        VideoTrack videoTrack = participant.getVideoTrack();
+        if (videoTrack != null) {
+            if(!participant.getMediaState().isVideoActive()){
+                participant.clearSinks();
+                binding.activeSpeakerRenderer.surfaceViewRenderer.clearImage();
+            } else updateTrack(videoTrack);
+        }
+    }
+
+    private void activeSpeakerAbsent(){
+        binding.activeSpeakerRenderer.nameTv.setVisibility(View.GONE);
+        binding.activeSpeakerRenderer.hostImage.setVisibility(View.GONE);
+        binding.activeSpeakerRenderer.microButton.setVisibility(View.GONE);
+        binding.activeSpeakerRenderer.cameraButton.setVisibility(View.GONE);
+        binding.activeSpeakerRenderer.surfaceViewRenderer.clearImage();
+    }
+
+    public void updateTrack(@NonNull VideoTrack videoTrackNew){
+        videoTrackNew.setEnabled(true);
+        videoTrackNew.addSink(binding.activeSpeakerRenderer.surfaceViewRenderer);
     }
 }

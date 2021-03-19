@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.screenmeet.sdk.Identity;
@@ -14,6 +15,7 @@ import com.screenmeet.sdk.Participant;
 import com.screenmeet.sdkdemo.R;
 import com.screenmeet.sdkdemo.databinding.PartcipantLayoutBinding;
 
+import org.jetbrains.annotations.NotNull;
 import org.webrtc.EglBase;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
@@ -26,15 +28,21 @@ public class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapte
     private final ArrayList<Participant> participants;
     private final EglBase eglBase;
 
+    private String activeParticipantId = "";
+    private int recyclerSize = 0;
+
     public ParticipantsAdapter(ArrayList<Participant> participants, EglBase eglBase) {
         this.participants = participants;
         this.eglBase = eglBase;
     }
 
+    @NotNull
     @Override
     public ParticipantsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
+
+        recyclerSize = parent.getMeasuredWidth();
 
         PartcipantLayoutBinding binding = PartcipantLayoutBinding.inflate(inflater);
         binding.surfaceViewRenderer.init(eglBase.getEglBaseContext(), null);
@@ -52,6 +60,9 @@ public class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapte
         int index = participants.indexOf(participant);
         if(index != -1){
             participants.remove(index);
+            if(activeParticipantId.equals(participant.getId())){
+                activeParticipantId = "";
+            }
             notifyItemRemoved(index);
         }
     }
@@ -64,34 +75,38 @@ public class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapte
         }
     }
 
+    public Participant updateActiveSpeaker(Participant participant) {
+        int index = participants.indexOf(participant);
+        if(index != -1){
+            activeParticipantId = participant.getId();
+            notifyDataSetChanged();
+            return participants.get(index);
+        } else return null;
+    }
+
+    @Nullable
+    public Participant getActiveSpeaker() {
+        for (Participant p : participants) {
+            if(p.getId().equals(activeParticipantId)) return p;
+        }
+        return null;
+    }
+
+    public boolean activeSpeakerPresent() {
+        return !activeParticipantId.isEmpty();
+    }
+
+    public boolean isActiveSpeaker(Participant participant) {
+        Participant activeSpeaker = getActiveSpeaker();
+        if (activeSpeaker != null) {
+            return activeSpeaker.getId().equals(participant.getId());
+        } else return false;
+    }
+
     @Override
-    public void onBindViewHolder(ParticipantsAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NotNull ParticipantsAdapter.ViewHolder holder, int position) {
         Participant participant = participants.get(position);
-
-        holder.nameTv.setText(participant.getIdentity().getName());
-
-        if(participant.getIdentity().getRole() == Identity.Role.HOST){
-            holder.hostImage.setVisibility(View.VISIBLE);
-        } else holder.hostImage.setVisibility(View.GONE);
-
-        if(participant.getCallerState().getAudioEnabled()){
-            holder.micButton.setImageResource(R.drawable.mic);
-        } else holder.micButton.setImageResource(R.drawable.mic_off);
-
-        boolean videoEnabled = participant.getCallerState().getVideoEnabled();
-        boolean screenEnabled = participant.getCallerState().getScreenEnabled();
-        if(videoEnabled || screenEnabled){
-            if(videoEnabled) holder.cameraButton.setImageResource(R.drawable.videocam);
-            else holder.cameraButton.setImageResource(R.drawable.screenshot);
-        } else {
-            holder.cameraButton.setImageResource(R.drawable.videocam_off);
-        }
-
-        VideoTrack videoTrack = participant.getVideoTrack();
-        if (videoTrack != null) {
-            videoTrack.setEnabled(true);
-            videoTrack.addSink(holder.renderer);
-        }
+        holder.displayParticipant(participant, recyclerSize, activeParticipantId);
     }
 
     // Returns the total count of items in the list
@@ -100,6 +115,11 @@ public class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapte
         return participants.size();
     }
 
+    public void dispose(){
+        for (Participant p: participants) {
+            p.clearSinks();
+        }
+    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -112,11 +132,59 @@ public class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapte
         public ViewHolder(View itemView) {
             super(itemView);
 
-            nameTv = (TextView) itemView.findViewById(R.id.nameTv);
-            micButton = (ImageView) itemView.findViewById(R.id.microButton);
-            cameraButton = (ImageView) itemView.findViewById(R.id.cameraButton);
-            hostImage = (ImageView) itemView.findViewById(R.id.hostImage);
-            renderer = (SurfaceViewRenderer) itemView.findViewById(R.id.surfaceViewRenderer);
+            nameTv = itemView.findViewById(R.id.nameTv);
+            micButton = itemView.findViewById(R.id.microButton);
+            cameraButton = itemView.findViewById(R.id.cameraButton);
+            hostImage = itemView.findViewById(R.id.hostImage);
+            renderer = itemView.findViewById(R.id.surfaceViewRenderer);
+        }
+
+        void displayParticipant(Participant participant, int recyclerSize, String activeParticipantId){
+            if(participant.getId().equals(activeParticipantId)){
+                itemView.setVisibility(View.GONE);
+                itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                return;
+            }
+
+            itemView.setVisibility(View.VISIBLE);
+            itemView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, recyclerSize));
+
+            nameTv.setText(participant.getIdentity().getName());
+
+            if(participant.getIdentity().getRole() == Identity.Role.HOST){
+                hostImage.setVisibility(View.VISIBLE);
+            } else hostImage.setVisibility(View.GONE);
+
+            if(participant.getMediaState().isAudioActive()){
+                micButton.setImageResource(R.drawable.mic);
+            } else micButton.setImageResource(R.drawable.mic_off);
+
+            switch (participant.getMediaState().getVideoState()){
+                case BACK_CAMERA:
+                case FRONT_CAMERA:
+                    cameraButton.setImageResource(R.drawable.videocam);
+                    updateTrack(participant);
+                    break;
+                case SCREEN:
+                    cameraButton.setImageResource(R.drawable.screenshot);
+                    updateTrack(participant);
+                    break;
+                case NONE:
+                    cameraButton.setImageResource(R.drawable.videocam_off);
+                    participant.clearSinks();
+            }
+
+            participant.logSinks();
+        }
+
+        public void updateTrack(Participant participant){
+            participant.clearSinks();
+
+            VideoTrack videoTrack = participant.getVideoTrack();
+            if (videoTrack != null) {
+                videoTrack.setEnabled(true);
+                videoTrack.addSink(renderer);
+            }
         }
     }
 }

@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
         enableButtons();
         handler = new Handler();
-
         eventListener = new SessionEventListener() {
             @Override
             public void onParticipantJoined(@NotNull Participant participant) {
@@ -158,10 +157,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void connectSession(String code){
         showProgress();
-        ScreenMeet.connect(code, ScreenMeet.VideoSourceType.SCREEN, true,
-                new CompletionHandler() {
+        ScreenMeet.connect(code, new CompletionHandler() {
                     @Override
                     public void onSuccess() {
+                        ScreenMeet.shareScreen();
                         showSessionConnected();
                     }
 

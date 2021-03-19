@@ -14,11 +14,10 @@
             android:id="@+id/codeEt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ems="6"
-            android:inputType="number"
+            android:ems="12"
             android:gravity="center"
             android:cursorVisible="false"
-            android:maxLength="6"
+            android:maxLength="12"
             android:layout_marginTop="@dimen/marginStart"
             android:layout_marginEnd="@dimen/marginStart"/>
 

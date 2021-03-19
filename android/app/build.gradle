@@ -9,7 +9,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 3
-        versionName "1.2.0"
+        versionName "2.0.0"
 
         ndk {
             abiFilters 'x86' ,'x86_64', 'armeabi-v7a', 'arm64-v8a'
@@ -40,6 +40,10 @@ dependencies {
     implementation 'com.screenmeet:sdk:2.0.0-SNAPSHOT'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation "androidx.constraintlayout:constraintlayout:2.0.4"
+
+    def appCenterSdkVersion = '4.1.0'
+    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
     implementation project(path: ':flutter')
     implementation "com.facebook.react:react-native:+" // From node_modules

@@ -2,6 +2,10 @@ package com.screenmeet.sdkdemo;
 
 import android.app.Application;
 
+import com.microsoft.appcenter.AppCenter;
+import com.microsoft.appcenter.analytics.Analytics;
+import com.microsoft.appcenter.crashes.Crashes;
+
 import com.screenmeet.sdk.ScreenMeet;
 
 public class SupportApplication extends Application {
@@ -11,29 +15,7 @@ public class SupportApplication extends Application {
         super.onCreate();
 
         //TODO Provide your API token below
-        ScreenMeet.Configuration configuration = new ScreenMeet.Configuration("1e24f87ca1");
-
-/*        String defaultConfig = "API token" + configuration.apiToken() +
-                " httpTimeout" + configuration.httpTimeout() +
-                " httpNumRetry" + configuration.httpNumRetry() +
-                " socketConnectionNumRetries" + configuration.socketConnectionNumRetries() +
-                " socketConnectionTimeout" + configuration.socketConnectionTimeout() +
-                " socketReconnectNum" + configuration.socketReconnectNum() +
-                " socketReconnectDelay" + configuration.socketReconnectDelay() +
-                " webRtcNumRetries" + configuration.webRtcNumRetries() +
-                " webRtcTimeout" + configuration.webRtcTimeout() +
-                " verboseLogging" + configuration.verboseLogging();
-        Log.i(this.getClass().getSimpleName(), "ScreenMeet SDK defaultConfig: " + defaultConfig);
-
-        configuration.httpTimeout(30000)
-                .httpNumRetry(5)
-                .socketConnectionTimeout(20000)
-                .socketConnectionNumRetries(5)
-                .socketReconnectDelay(0)
-                .socketReconnectNum(-1) //-1 - try to reconnect until session times out
-                .webRtcTimeout(60000)
-                .webRtcNumRetries(5)
-                .verboseLogging(true);*/
+        ScreenMeet.Configuration configuration = new ScreenMeet.Configuration(null);
 
         ScreenMeet.init(this, configuration);
         registerActivityLifecycleCallbacks(ScreenMeet.activityLifecycleCallback());
