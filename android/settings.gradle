@@ -1,0 +1,15 @@
+include ':app'
+//include ':app-kotlin'
+include ':flutter_module'
+
+setBinding(new Binding([gradle: this]))
+evaluate(new File(
+  settingsDir,
+  'flutter_module/.android/include_flutter.groovy'
+))
+
+rootProject.name = "ScreenMeetSdkDemo"
+
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+applyNativeModulesSettingsGradle(settings)
+

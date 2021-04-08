@@ -1,0 +1,54 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.screenmeet.sdkdemo"
+        minSdkVersion 21
+        targetSdkVersion 30
+        versionCode 5
+        versionName "2.0.0"
+
+        ndk {
+            abiFilters 'x86' ,'x86_64', 'armeabi-v7a', 'arm64-v8a'
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation "com.screenmeet:sdk:${screenmeetVersion}"
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation "androidx.constraintlayout:constraintlayout:2.0.4"
+
+    def appCenterSdkVersion = '4.1.0'
+    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
+
+    implementation project(path: ':flutter')
+    implementation "com.facebook.react:react-native:+" // From node_modules
+    implementation "org.webkit:android-jsc:+"
+}
+
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+applyNativeModulesAppBuildGradle(project)

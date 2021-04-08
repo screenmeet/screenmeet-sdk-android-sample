@@ -1,3 +1,0 @@
-include ':app-kotlin'
-include ':app'
-rootProject.name = "ScreenMeetSdkDemo"

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <RelativeLayout
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/marginStart">
+
+        <EditText
+            android:id="@+id/codeEt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="12"
+            android:gravity="center"
+            android:cursorVisible="false"
+            android:maxLength="12"
+            android:layout_marginTop="@dimen/marginStart"
+            android:layout_marginEnd="@dimen/marginStart"/>
+
+        <TextView
+            android:id="@+id/resultTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/codeEt"
+            android:gravity="center_vertical"/>
+
+        <LinearLayout
+            android:id="@+id/sessionContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/resultTv">
+
+            <Button
+                android:id="@+id/connectBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connect"/>
+
+            <ProgressBar
+                android:id="@+id/connectProgress"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:id="@+id/disconnectBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disconnect"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/sessionTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/sessionContainer"
+            android:textSize="34sp"/>
+
+        <TextView
+            android:id="@+id/connectionTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/sessionTv"
+            android:textSize="20sp"
+            android:gravity="center_vertical"/>
+
+        <TextView
+            android:id="@+id/sessionFeaturesTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/connectionTv"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/stateLabelTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/sessionFeaturesTv"
+            android:textSize="24dp"
+            android:text="State:  "/>
+
+        <TextView
+            android:id="@+id/stateTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/stateLabelTv"
+            android:layout_alignBottom="@+id/stateLabelTv"
+            android:layout_toEndOf="@id/stateLabelTv"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/stateReasonTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/stateLabelTv"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/participantsLabelTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/stateReasonTv"
+            android:textSize="24sp"/>
+
+        <TextView
+            android:id="@+id/participantsTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/participantsLabelTv"
+            android:textSize="14sp"/>
+
+        <Button
+            android:id="@+id/confidentialityDemoBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confidentiality Demo"
+            android:layout_below="@+id/participantsTv"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginEnd="@dimen/marginStart"/>
+
+        <Button
+            android:id="@+id/navigateToWebView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confidential WebView Demo"
+            android:layout_below="@+id/confidentialityDemoBtn"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginEnd="@dimen/marginStart"/>
+
+        <Button
+            android:id="@+id/flutterFragmentDemoBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cross platform UI Demo"
+            android:layout_below="@+id/navigateToWebView"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginEnd="@dimen/marginStart"/>
+
+        <Button
+            android:id="@+id/flutterActivityDemoBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Flutter Activity Demo"
+            android:layout_below="@+id/flutterFragmentDemoBtn"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginEnd="@dimen/marginStart"/>
+
+        <Button
+            android:id="@+id/reactActivityDemoBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="React Native Activity Demo"
+            android:layout_below="@+id/flutterActivityDemoBtn"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginEnd="@dimen/marginStart"/>
+
+        <View
+            android:id="@+id/mockView"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="@dimen/marginStart"/>
+
+        <Button
+            android:id="@+id/callActivityDemoBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:textColor="@android:color/white"
+            android:padding="@dimen/marginStart"
+            android:layout_toEndOf="@id/codeEt"
+            android:layout_alignTop="@id/codeEt"
+            android:visibility="gone"
+            android:text="Navigate to call" />
+
+    </RelativeLayout>
+</ScrollView>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/obfuscate"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/obfuscateNew"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add obfuscated view"
+                android:textSize="12sp"/>
+
+            <Button
+                android:id="@+id/deobfuscateNew"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Remove obfuscated view"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/obfuscateContainer"
+            android:orientation="vertical"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content">
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
