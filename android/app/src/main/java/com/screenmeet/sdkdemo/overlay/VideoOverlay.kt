@@ -40,7 +40,6 @@ class VideoOverlay(context: Context): BaseOverlay(context){
             setZOrderMediaOverlay(false)
 
             init(eglContext, object : RendererCommon.RendererEvents {
-
                 override fun onFirstFrameRendered() {}
 
                 override fun onFrameResolutionChanged(width: Int, height: Int, p2: Int) {
@@ -57,6 +56,7 @@ class VideoOverlay(context: Context): BaseOverlay(context){
                         layoutParams.height = widgetHeight
                         Handler(Looper.getMainLooper()).post {
                             windowManager.updateViewLayout(overlay, layoutParams)
+                            overlay.visibility = View.VISIBLE
                         }
                     }
                 }
@@ -81,6 +81,7 @@ class VideoOverlay(context: Context): BaseOverlay(context){
 
         renderer?.let {
             overlay?.let {  view ->
+                view.visibility = View.INVISIBLE
                 val layoutParams = view.layoutParams
                 if(layoutParams != null){
                     layoutParams.width = widgetMaxSize

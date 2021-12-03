@@ -1,7 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <dimen name="marginSmallest">4dp</dimen>
+    <dimen name="message_margin">6dp</dimen>
     <dimen name="marginStart">10dp</dimen>
-    <dimen name="button_size">55dp</dimen>
-    <dimen name="button_padding">10dp</dimen>
+    <dimen name="marginSmall">10dp</dimen>
+    <dimen name="marginBottom">14dp</dimen>
+    <dimen name="marginMedium">24dp</dimen>
+    <dimen name="marginTop">32dp</dimen>
+    <dimen name="marginTopButton">48dp</dimen>
+
+    <dimen name="fab_size">64dp</dimen>
     <dimen name="minimum_btn_size">24dp</dimen>
+    <dimen name="button_size">55dp</dimen>
+    <dimen name="button_size_medium">36dp</dimen>
+
+    <dimen name="feature_grid_top_margin">40dp</dimen>
+    <dimen name="feature_grid_top_margin_large">140dp</dimen>
+
+    <dimen name="rounded_radius_24">24dp</dimen>
+    <dimen name="rounded_radius_32">32dp</dimen>
+
+    <dimen name="button_padding">10dp</dimen>
+
+    <dimen name="feature_item_size">156dp</dimen>
 </resources>

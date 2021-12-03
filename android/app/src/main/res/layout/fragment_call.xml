@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/activeSpeakerRenderer"
+        layout="@layout/layout_active_speaker"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.85" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:gravity="center"
+        android:translationZ="1dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline">
+
+        <ImageButton
+            android:id="@+id/micro"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:background="@drawable/rounded_button"
+            android:padding="@dimen/button_padding"
+            android:src="@drawable/mic" />
+
+        <ImageButton
+            android:id="@+id/camera"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:background="@drawable/rounded_button"
+            android:padding="@dimen/button_padding"
+            android:src="@drawable/videocam" />
+
+        <ImageButton
+            android:id="@+id/cameraSwitch"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:background="@drawable/rounded_button"
+            android:visibility="gone"
+            android:padding="@dimen/button_padding"
+            android:src="@drawable/camera_switch" />
+
+        <ImageButton
+            android:id="@+id/screen"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:background="@drawable/rounded_button"
+            android:padding="@dimen/button_padding"
+            android:src="@drawable/screenshot" />
+
+        <ImageButton
+            android:id="@+id/chat"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/disabled_button"
+            android:padding="@dimen/button_padding"
+            android:src="@drawable/ic_chat" />
+
+        <ImageButton
+            android:id="@+id/hangUp"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:layout_marginLeft="@dimen/marginStart"
+            android:layout_marginRight="@dimen/marginStart"
+            android:background="@drawable/rounded_button"
+            android:padding="@dimen/button_padding"
+            android:src="@drawable/call_end" />
+    </LinearLayout>
+
+        <include
+            android:id="@+id/localRenderer"
+            layout="@layout/layout_participant"
+            android:layout_width="135dp"
+            android:layout_height="240dp"
+            android:layout_marginStart="@dimen/button_padding"
+            app:layout_constraintBottom_toTopOf="@+id/guideline"
+            app:layout_constraintEnd_toStartOf="@+id/guideline3"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/buttonSidebar"
+        style="@style/ButtonRound"
+        android:layout_width="@dimen/button_size_medium"
+        android:layout_height="@dimen/button_size_medium"
+        android:layout_marginStart="@dimen/button_padding"
+        android:layout_marginEnd="@dimen/button_padding"
+        android:layout_marginTop="@dimen/marginTopButton"
+        android:src="@drawable/ic_arrow_left"
+        app:layout_constraintEnd_toStartOf="@+id/participantsRecycler"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/participantsRecycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/background_rounded_sidebar_right"
+        android:padding="@dimen/marginStart"
+        android:layout_marginTop="@dimen/marginTop"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
