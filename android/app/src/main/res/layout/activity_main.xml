@@ -1,160 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <RelativeLayout
-    android:id="@+id/container"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/marginStart">
-
-        <EditText
-            android:id="@+id/codeEt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ems="12"
-            android:gravity="center"
-            android:cursorVisible="false"
-            android:maxLength="12"
-            android:layout_marginTop="@dimen/marginStart"
-            android:layout_marginEnd="@dimen/marginStart"/>
-
-        <TextView
-            android:id="@+id/resultTv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/codeEt"
-            android:gravity="center_vertical"/>
+    <LinearLayout
+        android:id="@+id/statusView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:padding="@dimen/marginSmall">
 
         <LinearLayout
-            android:id="@+id/sessionContainer"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/resultTv">
-
-            <Button
-                android:id="@+id/connectBtn"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/connectionTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Connect"/>
-
-            <ProgressBar
-                android:id="@+id/connectProgress"
-                style="?android:attr/progressBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-            <Button
-                android:id="@+id/disconnectBtn"
+                android:layout_marginBottom="@dimen/marginSmallest"
+                android:textStyle="bold"
+                android:textColor="@color/white"/>
+            <TextView
+                android:id="@+id/participantsTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Disconnect"/>
-
+                android:textStyle="bold"
+                android:textColor="@color/white"/>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/stateLabelTv"
+        <Space
+            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/videoCall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/sessionContainer"
-            android:textSize="24dp"
-            android:text="State:  "/>
+            android:layout_gravity="end"
+            android:text="Video call"
+            android:textColor="@color/white"
+            android:paddingStart="@dimen/marginSmall"
+            android:paddingEnd="@dimen/marginSmall"
+            android:backgroundTint="@color/colorAccent"
+            android:background="@drawable/rounded_button"/>
 
-        <TextView
-            android:id="@+id/stateTv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/stateLabelTv"
-            android:layout_alignBottom="@+id/stateLabelTv"
-            android:layout_toEndOf="@id/stateLabelTv"
-            android:textSize="24sp" />
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/disconnect"
+            android:layout_width="@dimen/marginTopButton"
+            android:layout_height="@dimen/marginTopButton"
+            android:src="@drawable/ic_close"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/button_padding"
+            android:backgroundTint="@color/bright_red"
+            android:background="@drawable/rounded_button"/>
+    </LinearLayout>
 
-        <TextView
-            android:id="@+id/participantsLabelTv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Participants: "
-            android:layout_below="@+id/stateTv"
-            android:textSize="24sp"/>
+    <androidx.fragment.app.FragmentContainerView
+    android:id="@+id/fragmentHost"
+    android:name="androidx.navigation.fragment.NavHostFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:defaultNavHost="true" />
 
-        <TextView
-            android:id="@+id/participantsTv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/participantsLabelTv"
-            android:textSize="14sp"/>
-
-        <Button
-            android:id="@+id/confidentialityDemoBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Confidentiality Demo"
-            android:layout_below="@+id/participantsTv"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginEnd="@dimen/marginStart"/>
-
-        <Button
-            android:id="@+id/navigateToWebView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Confidential WebView Demo"
-            android:layout_below="@+id/confidentialityDemoBtn"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginEnd="@dimen/marginStart"/>
-
-        <Button
-            android:id="@+id/flutterFragmentDemoBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cross platform UI Demo"
-            android:layout_below="@+id/navigateToWebView"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginEnd="@dimen/marginStart"/>
-
-        <Button
-            android:id="@+id/flutterActivityDemoBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Flutter Activity Demo"
-            android:layout_below="@+id/flutterFragmentDemoBtn"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginEnd="@dimen/marginStart"/>
-
-        <Button
-            android:id="@+id/reactActivityDemoBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="React Native Activity Demo"
-            android:layout_below="@+id/flutterActivityDemoBtn"
-            android:textSize="12sp"
-            android:visibility="gone"
-            android:layout_marginEnd="@dimen/marginStart"/>
-
-        <View
-            android:id="@+id/mockView"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/marginStart"/>
-
-        <Button
-            android:id="@+id/callActivityDemoBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
-            android:textColor="@android:color/white"
-            android:padding="@dimen/marginStart"
-            android:layout_toEndOf="@id/codeEt"
-            android:layout_alignTop="@id/codeEt"
-            android:visibility="gone"
-            android:text="Navigate to call" />
-
-    </RelativeLayout>
-</ScrollView>
+</LinearLayout>

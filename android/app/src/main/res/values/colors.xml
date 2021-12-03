@@ -3,8 +3,12 @@
     <color name="colorPrimary">#f6a255</color>
     <color name="colorPrimaryDark">#f27c0d</color>
     <color name="colorAccent">#ffb640</color>
+    <color name="white">#ffffff</color>
     <color name="disabled_button">#363137</color>
     <color name="loading_button">#919191</color>
     <color name="enabled_button">#2784C4</color>
     <color name="bright_red">#D01A19</color>
+    <color name="green">#43a047</color>
+    <color name="yellow">#fdd835</color>
+    <color name="grey_300">#e0e0e0</color>
 </resources>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="@dimen/marginBottom">
+
+    <View
+        android:layout_height="5dp"
+        android:layout_width="60dp"
+        android:background="@drawable/background_rounded_view"
+        android:layout_gravity="center"
+        android:alpha="0.5"
+        android:layout_marginBottom="10dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chatRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:padding="@dimen/marginBottom"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:id="@+id/chatLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_size"
+        android:paddingStart="@dimen/marginStart"
+        android:paddingEnd="@dimen/marginStart"
+        android:layout_marginBottom="@dimen/marginBottom"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/colorAccent"
+            android:paddingStart="@dimen/minimum_btn_size"
+            android:paddingEnd="@dimen/minimum_btn_size">
+
+            <EditText
+                android:id="@+id/chatEt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="@android:color/white"
+                android:textColor="@android:color/white" />
+        </FrameLayout>
+
+        <ImageButton
+            android:id="@+id/sendMessageBtn"
+            style="@style/ButtonRound"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:layout_marginStart="@dimen/button_padding"
+            android:src="@drawable/ic_send" />
+    </LinearLayout>
+</LinearLayout>

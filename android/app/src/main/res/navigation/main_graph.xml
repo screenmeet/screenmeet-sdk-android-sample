@@ -1,0 +1,134 @@
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_graph">
+
+    <fragment
+        android:id="@+id/fragmentConnect"
+        android:name="com.screenmeet.sdkdemo.feature.ConnectFragment"
+        tools:layout="@layout/fragment_connect">
+
+        <action
+            android:id="@+id/goMain"
+            app:popUpTo="@id/main_graph"
+            app:popUpToInclusive="true"
+            app:launchSingleTop="true"
+            app:destination="@+id/fragmentMain" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentMain"
+        android:name="com.screenmeet.sdkdemo.feature.main.MainFragment"
+        tools:layout="@layout/fragment_main">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/goCamera"
+            app:destination="@+id/fragmentCamera" />
+
+        <action
+            android:id="@+id/goWebView"
+            app:destination="@+id/fragmentWebView" />
+
+        <action
+            android:id="@+id/goVideoCall"
+            app:destination="@+id/fragmentVideoCall" />
+
+        <action
+            android:id="@+id/goCrossPlatform"
+            app:destination="@+id/fragmentCrossPlatform" />
+
+        <action
+            android:id="@+id/goConfidentiality"
+            app:destination="@+id/fragmentConfidentiality" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentCamera"
+        android:name="com.screenmeet.sdkdemo.feature.CameraFragment"
+        tools:layout="@layout/fragment_camera">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentWebView"
+        android:name="com.screenmeet.sdkdemo.feature.WebViewFragment"
+        tools:layout="@layout/fragment_webview_confidentiality">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentCrossPlatform"
+        android:name="com.screenmeet.sdkdemo.feature.CrossPlatformFragment"
+        tools:layout="@layout/fragment_crossplatform">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentConfidentiality"
+        android:name="com.screenmeet.sdkdemo.feature.ConfidentialityFragment"
+        tools:layout="@layout/fragment_ui_confidentiality">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentVideoCall"
+        android:name="com.screenmeet.sdkdemo.feature.call.CallFragment"
+        tools:layout="@layout/fragment_call">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/goChat"
+            app:destination="@+id/fragmentChat" />
+    </fragment>
+
+    <dialog
+        android:id="@+id/fragmentChat"
+        android:name="com.screenmeet.sdkdemo.feature.chat.ChatModalBottomSheet"
+        tools:layout="@layout/fragment_chat">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
+    </dialog>
+
+</navigation>

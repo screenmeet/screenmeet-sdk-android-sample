@@ -4,6 +4,7 @@
     package="com.screenmeet.sdkdemo">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.CAMERA"/>
 
     <application
         android:usesCleartextTraffic="true" tools:targetApi="28"
@@ -15,24 +16,19 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".CallActivity"/>
-        <activity android:name=".ConfidentialityActivity"/>
-        <activity android:name=".CombinedFragmentActivity"/>
-        <activity android:name=".WebViewActivity"/>
-        <activity android:name=".ReactNativeActivity"/>
+        <activity android:name="com.xps.react.demo.ReactNativeActivity" android:exported="false"/>
         <activity
             android:name="io.flutter.embedding.android.FlutterActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
+            android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-
         <service
             android:name=".service.ForegroundService"
             android:enabled="true"
