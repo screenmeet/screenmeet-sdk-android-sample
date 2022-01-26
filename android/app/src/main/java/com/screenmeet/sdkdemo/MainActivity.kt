@@ -1,6 +1,8 @@
 package com.screenmeet.sdkdemo
 
+import android.graphics.Color
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -10,9 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
-import com.screenmeet.sdk.Participant
-import com.screenmeet.sdk.ScreenMeet
-import com.screenmeet.sdk.SessionEventListener
+import com.screenmeet.sdk.*
 import com.screenmeet.sdk.domain.entity.ChatMessage
 import com.screenmeet.sdkdemo.SupportApplication.Companion.startListeningForeground
 import com.screenmeet.sdkdemo.SupportApplication.Companion.stopListeningForeground
@@ -41,17 +41,19 @@ class MainActivity: AppCompatActivity() {
         setContentView(binding.root)
 
         binding.disconnect.setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle("Disconnect")
-                .setMessage("Are you sure you want to disconnect?")
-                .setPositiveButton("OK") { _, _ -> ScreenMeet.disconnect() }
-                .setNegativeButton("CANCEL", null)
-                .show()
+            showAlert(
+                "Disconnect",
+                "Are you sure you want to disconnect?") {
+                ScreenMeet.disconnect()
+            }
         }
 
         applyEdgeToEdge()
         applyInsets()
         initNavigation()
+
+        setWindowFlag(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false)
+        window.statusBarColor = Color.TRANSPARENT
 
         ScreenMeet.registerEventListener(eventListener)
         lifecycleScope.launchWhenResumed { observeNavigationCommands() }
@@ -61,8 +63,16 @@ class MainActivity: AppCompatActivity() {
         widgetManager = WidgetManager(this)
     }
 
+    private fun setWindowFlag(bits: Int, on: Boolean) {
+        val win = window
+        val winParams = win.attributes
+        if (on) winParams.flags = winParams.flags or bits
+        else winParams.flags = winParams.flags and bits.inv()
+        win.attributes = winParams
+    }
+
     private fun applyInsets() {
-        binding.statusView.applyInsetter { type(statusBars = true) { margin() } }
+        binding.statusView.applyInsetter { type(statusBars = true) { padding() } }
     }
 
     private fun applyEdgeToEdge() {
@@ -117,6 +127,41 @@ class MainActivity: AppCompatActivity() {
         override fun onLocalVideoStopped() {}
 
         override fun onParticipantMediaStateChanged(participant: Participant) { displayWidget() }
+
+        override fun onFeatureRequest(
+            feature: Feature,
+            decisionHandler: (granted: Boolean) -> Unit
+        ) { }
+
+        override fun onFeatureRequestRejected(entitlement: Entitlement) { }
+
+        override fun onFeatureStarted(feature: Feature) {
+            binding.stopRemoteAssist.isVisible = true
+            binding.stopRemoteAssist.setOnClickListener {
+                showAlert(
+                    "Stop Feature",
+                    "Are you sure you want to stop ${feature.entitlement} Feature?") {
+                    ScreenMeet.stopFeature(feature)
+                }
+             }
+            when(feature.entitlement){
+                Entitlement.LASER_POINTER -> binding.stopRemoteAssist.setImageResource(R.drawable.ic_pointer)
+                Entitlement.REMOTE_CONTROL -> binding.stopRemoteAssist.setImageResource(R.drawable.ic_remote_control)
+            }
+        }
+
+        override fun onFeatureStopped(feature: Feature) {
+            binding.stopRemoteAssist.isVisible = false
+        }
+    }
+
+    private fun showAlert(dialogTittle: String, message: String, confirmed: () -> Unit ){
+        AlertDialog.Builder(this)
+            .setTitle(dialogTittle)
+            .setMessage(message)
+            .setPositiveButton("OK") { _, _ -> confirmed() }
+            .setNegativeButton("CANCEL", null)
+            .show()
     }
 
     private fun displayWidget(){
@@ -147,9 +192,8 @@ class MainActivity: AppCompatActivity() {
             ScreenMeet.SessionState.DISCONNECTED -> {
                 stopListeningForeground()
                 binding.statusView.isVisible = false
-                if(navController.currentDestination?.id == R.id.fragmentVideoCall){
-                    navigationDispatcher.emit { it.popBackStack() }
-                } else navigationDispatcher.emit { it.navigate(R.id.goConnect) }
+                binding.stopRemoteAssist.isVisible = false
+                navigationDispatcher.emit { it.navigate(R.id.goConnect) }
             }
         }
 

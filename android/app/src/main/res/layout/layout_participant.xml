@@ -8,7 +8,7 @@
     android:id="@+id/layout">
 
     <org.webrtc.SurfaceViewRenderer
-        android:id="@+id/surfaceViewRenderer"
+        android:id="@+id/renderer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"

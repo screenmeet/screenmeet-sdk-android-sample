@@ -1,5 +1,7 @@
 package com.screenmeet.sdkdemo.service;
 
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
+
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -103,7 +105,7 @@ public class ForegroundService extends Service {
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
 
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), 0);
+                new Intent(this, MainActivity.class), FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ANDROID_CHANNEL_ID)
                 .setContentIntent(activityPendingIntent)

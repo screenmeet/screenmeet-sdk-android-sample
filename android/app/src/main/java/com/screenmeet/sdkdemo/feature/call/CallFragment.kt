@@ -44,7 +44,11 @@ class CallFragment: Fragment(R.layout.fragment_call) {
         eglBase = ScreenMeet.eglContext
 
         binding.apply {
-            localRenderer.surfaceViewRenderer.init(eglBase, null)
+            localRenderer.renderer.init(eglBase, null)
+            localRenderer.renderer.setZOrderMediaOverlay(true)
+            localRenderer.renderer.setZOrderOnTop(true)
+
+            activeSpeakerRenderer.zoomView.setHasClickableChildren(true)
             activeSpeakerRenderer.renderer.setZOrderOnTop(false)
             activeSpeakerRenderer.renderer.init(eglBase, object : RendererEvents {
                 override fun onFirstFrameRendered() {}
@@ -59,8 +63,6 @@ class CallFragment: Fragment(R.layout.fragment_call) {
                     }
                 }
             })
-            localRenderer.surfaceViewRenderer.setZOrderMediaOverlay(true)
-            localRenderer.surfaceViewRenderer.setZOrderOnTop(true)
 
             chat.setOnClickListener { navigationDispatcher.emit { it.navigate(R.id.goChat) } }
 
@@ -141,28 +143,24 @@ class CallFragment: Fragment(R.layout.fragment_call) {
 
     fun renderLocalVideoTrack(videoTrack: VideoTrack?) {
         if (videoTrack != null) {
-            localVideoTrack?.removeSink(binding.localRenderer.surfaceViewRenderer)
-            localVideoTrack?.removeSink(rotationSink)
-
             localVideoTrack = videoTrack
-            localVideoTrack?.setEnabled(true)
             localVideoTrack?.addSink(rotationSink)
         } else {
+            binding.localRenderer.renderer.clearImage()
             localVideoTrack = null
-            binding.localRenderer.surfaceViewRenderer.clearImage()
         }
     }
 
     private val rotationSink = VideoSink { videoFrame: VideoFrame ->
         val frame = VideoFrame(videoFrame.buffer, 0, videoFrame.timestampNs)
-        binding.localRenderer.surfaceViewRenderer.onFrame(frame)
+        binding.localRenderer.renderer.onFrame(frame)
     }
 
     override fun onResume() {
         super.onResume()
 
         ScreenMeet.registerEventListener(eventListener)
-        binding.localRenderer.surfaceViewRenderer.clearImage()
+        binding.localRenderer.renderer.clearImage()
         enableButtons()
         loadState()
     }
@@ -171,18 +169,13 @@ class CallFragment: Fragment(R.layout.fragment_call) {
         super.onPause()
         participantsAdapter?.dispose()
         localVideoTrack?.removeSink(rotationSink)
-        localVideoTrack?.removeSink(binding.localRenderer.surfaceViewRenderer)
         ScreenMeet.unregisterEventListener(eventListener)
     }
 
     private fun loadState() {
         val participants = ScreenMeet.participants()
         participantsAdapter?.dispose()
-        participantsAdapter =
-            ParticipantsAdapter(
-                participants,
-                eglBase
-            )
+        participantsAdapter = ParticipantsAdapter(participants, eglBase)
         binding.participantsRecycler.adapter = participantsAdapter
         binding.participantsRecycler.layoutManager = LinearLayoutManager(binding.root.context)
         if (participants.isNotEmpty()) {
@@ -190,14 +183,16 @@ class CallFragment: Fragment(R.layout.fragment_call) {
                 switchActiveSpeaker(activeSpeaker)
             } ?:  switchActiveSpeaker(participants[0])
         } else activeSpeakerAbsent()
+
         renderLocalVideoTrack(ScreenMeet.localVideoTrack())
         applyControlsState()
         setButtonBackgroundColor(binding.hangUp, R.color.bright_red)
     }
 
     private fun sessionEnded() {
+        renderLocalVideoTrack(null)
+        binding.localRenderer.renderer.release()
         binding.activeSpeakerRenderer.renderer.release()
-        binding.localRenderer.surfaceViewRenderer.release()
         participantsAdapter?.dispose()
     }
 
@@ -357,5 +352,11 @@ class CallFragment: Fragment(R.layout.fragment_call) {
         videoTrackNew.addSink(binding.activeSpeakerRenderer.renderer)
         binding.activeSpeakerRenderer.renderer.isVisible = true
         binding.activeSpeakerRenderer.logo.isVisible = false
+    }
+
+    override fun onStop() {
+        super.onStop()
+        binding.localRenderer.renderer.release()
+        binding.activeSpeakerRenderer.renderer.release()
     }
 }

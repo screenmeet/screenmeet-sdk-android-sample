@@ -45,9 +45,9 @@ public class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapte
         recyclerSize = parent.getMeasuredWidth();
 
         LayoutParticipantBinding binding = LayoutParticipantBinding.inflate(inflater);
-        binding.surfaceViewRenderer.init(eglBase, null);
-        binding.surfaceViewRenderer.setZOrderMediaOverlay(true);
-        binding.surfaceViewRenderer.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+        binding.renderer.init(eglBase, null);
+        binding.renderer.setZOrderMediaOverlay(true);
+        binding.renderer.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT);
         return new ViewHolder(binding.getRoot());
     }
 
@@ -139,7 +139,7 @@ public class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapte
             micButton = itemView.findViewById(R.id.microButton);
             cameraButton = itemView.findViewById(R.id.cameraButton);
             hostImage = itemView.findViewById(R.id.hostImage);
-            renderer = itemView.findViewById(R.id.surfaceViewRenderer);
+            renderer = itemView.findViewById(R.id.renderer);
         }
 
         void displayParticipant(Participant participant, int recyclerSize, String activeParticipantId){

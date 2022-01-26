@@ -34,22 +34,34 @@
                 android:textColor="@color/white"/>
         </LinearLayout>
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/videoCall"
+            android:layout_width="@dimen/marginTopButton"
+            android:layout_height="@dimen/marginTopButton"
+            android:layout_gravity="start"
+            android:layout_marginStart="@dimen/message_margin"
+            android:paddingStart="@dimen/message_margin"
+            android:paddingEnd="@dimen/message_margin"
+            android:src="@drawable/ic_video_call"
+            android:background="@android:color/transparent"/>
+
         <Space
             android:layout_height="0dp"
             android:layout_width="0dp"
             android:layout_weight="1"/>
 
-        <Button
-            android:id="@+id/videoCall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:text="Video call"
-            android:textColor="@color/white"
-            android:paddingStart="@dimen/marginSmall"
-            android:paddingEnd="@dimen/marginSmall"
-            android:backgroundTint="@color/colorAccent"
-            android:background="@drawable/rounded_button"/>
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/stop_remote_assist"
+            android:layout_width="@dimen/marginTopButton"
+            android:layout_height="@dimen/marginTopButton"
+            android:visibility="gone"
+            android:paddingStart="@dimen/message_margin"
+            android:paddingEnd="@dimen/message_margin"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:tint="@color/bright_red"
+            android:layout_marginStart="@dimen/button_padding"
+            android:background="@android:color/transparent"/>
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/disconnect"
@@ -58,8 +70,8 @@
             android:src="@drawable/ic_close"
             android:layout_gravity="center"
             android:layout_marginStart="@dimen/button_padding"
-            android:backgroundTint="@color/bright_red"
-            android:background="@drawable/rounded_button"/>
+            android:background="@android:color/transparent"/>
+
     </LinearLayout>
 
     <androidx.fragment.app.FragmentContainerView
