@@ -18,7 +18,8 @@ description: A sample Flutter module.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
+  flutter: ">=2.5.3"
 
 dependencies:
   flutter:

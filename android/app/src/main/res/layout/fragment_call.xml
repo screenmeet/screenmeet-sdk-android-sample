@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -69,9 +68,9 @@
             android:layout_marginLeft="@dimen/marginStart"
             android:layout_marginRight="@dimen/marginStart"
             android:background="@drawable/rounded_button"
-            android:visibility="gone"
             android:padding="@dimen/button_padding"
-            android:src="@drawable/camera_switch" />
+            android:src="@drawable/camera_switch"
+            android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/screen"
@@ -105,18 +104,18 @@
             android:src="@drawable/call_end" />
     </LinearLayout>
 
-        <include
-            android:id="@+id/localRenderer"
-            layout="@layout/layout_participant"
-            android:layout_width="135dp"
-            android:layout_height="240dp"
-            android:layout_marginStart="@dimen/button_padding"
-            app:layout_constraintBottom_toTopOf="@+id/guideline"
-            app:layout_constraintEnd_toStartOf="@+id/guideline3"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0" />
+    <include
+        android:id="@+id/localRenderer"
+        layout="@layout/layout_participant"
+        android:layout_width="135dp"
+        android:layout_height="240dp"
+        android:layout_marginStart="@dimen/button_padding"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@+id/guideline3"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/buttonSidebar"
@@ -124,8 +123,8 @@
         android:layout_width="@dimen/button_size_medium"
         android:layout_height="@dimen/button_size_medium"
         android:layout_marginStart="@dimen/button_padding"
-        android:layout_marginEnd="@dimen/button_padding"
         android:layout_marginTop="@dimen/marginTopButton"
+        android:layout_marginEnd="@dimen/button_padding"
         android:src="@drawable/ic_arrow_left"
         app:layout_constraintEnd_toStartOf="@+id/participantsRecycler"
         app:layout_constraintTop_toTopOf="parent" />
@@ -134,9 +133,9 @@
         android:id="@+id/participantsRecycler"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="@dimen/marginTop"
         android:background="@drawable/background_rounded_sidebar_right"
         android:padding="@dimen/marginStart"
-        android:layout_marginTop="@dimen/marginTop"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingTop="@dimen/marginBottom">
 
     <View
-        android:layout_height="5dp"
         android:layout_width="60dp"
-        android:background="@drawable/background_rounded_view"
+        android:layout_height="5dp"
         android:layout_gravity="center"
+        android:layout_marginBottom="10dp"
         android:alpha="0.5"
-        android:layout_marginBottom="10dp"/>
+        android:background="@drawable/background_rounded_view" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="@dimen/marginBottom"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:padding="@dimen/marginBottom" />
 
     <LinearLayout
         android:id="@+id/chatLayout"
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_size"
-        android:paddingStart="@dimen/marginStart"
-        android:paddingEnd="@dimen/marginStart"
         android:layout_marginBottom="@dimen/marginBottom"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/marginStart"
+        android:paddingEnd="@dimen/marginStart">
 
         <FrameLayout
             android:layout_width="0dp"
@@ -44,6 +44,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@android:color/white"
+                android:inputType="text"
+                android:maxLines="1"
                 android:textColor="@android:color/white" />
         </FrameLayout>
 

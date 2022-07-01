@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ScreenMeetSdkDemo</string>
+    <string name="app_name">ScreenMeet Live</string>
     <string name="me">Me</string>
     <string name="captcha_not_robot">I\'m not a robot</string>
     <string name="waiting_for_knock">Waiting for permission to join</string>

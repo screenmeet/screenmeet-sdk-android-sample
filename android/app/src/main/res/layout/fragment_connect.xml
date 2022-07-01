@@ -1,74 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/colorPrimary"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:orientation="vertical">
 
     <Space
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 
     <ImageView
         android:id="@+id/logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_logo"
         android:layout_gravity="center"
-        android:layout_marginBottom="@dimen/marginMedium"/>
+        android:layout_marginBottom="@dimen/marginMedium"
+        android:src="@drawable/ic_logo" />
 
     <com.mukesh.OtpView
         android:id="@+id/otp_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:cursorVisible="false"
         android:focusableInTouchMode="true"
         android:inputType="number"
+        android:longClickable="false"
         android:textColor="@color/white"
         android:textSize="24sp"
-        android:cursorVisible="false"
         app:OtpItemCount="6"
         app:OtpLineColor="@color/white"
-        app:OtpViewType="line"
-        android:longClickable="false"
-        android:layout_gravity="center"/>
+        app:OtpViewType="line" />
 
     <TextView
         android:id="@+id/result_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
+        android:layout_gravity="center"
         android:layout_marginTop="@dimen/marginMedium"
         android:textColor="@color/bright_red"
-        android:visibility="gone"
-        android:layout_gravity="center"/>
+        android:textSize="14sp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/hintTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Please, provide a code for your ScreenMeet session"
+        android:layout_gravity="center"
         android:layout_marginTop="@dimen/marginMedium"
+        android:text="Please, provide a code for your ScreenMeet session"
         android:textColor="@color/white"
-        android:layout_gravity="center"/>
+        android:textSize="14sp" />
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/loadingIndicator"
         android:layout_width="@dimen/fab_size"
         android:layout_height="@dimen/fab_size"
+        android:layout_gravity="center"
         android:layout_marginTop="@dimen/marginMedium"
         android:indeterminateOnly="true"
-        app:indicatorColor="@color/white"
         android:visibility="gone"
-        android:layout_gravity="center"/>
+        app:indicatorColor="@color/white" />
 
     <Space
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="2"/>
+        android:layout_weight="2" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

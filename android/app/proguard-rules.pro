@@ -21,5 +21,6 @@
 #-renamesourcefileattribute SourceFile
 -keep class com.screenmeet.sdk.** { *; }
 -keep class org.webrtc.** { *; }
+-keep class org.mediasoup.** { *; }
 -dontwarn org.webrtc.**
 -keepattributes InnerClasses

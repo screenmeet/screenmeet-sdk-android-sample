@@ -1,4 +1,4 @@
-rootProject.name = "ScreenMeetSdkDemo"
+rootProject.name = "ScreenMeet Live"
 include ':app'
 loadProps()
 
