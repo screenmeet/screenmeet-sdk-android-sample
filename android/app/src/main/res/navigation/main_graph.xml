@@ -1,7 +1,8 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_graph">
+    android:id="@+id/main_graph"
+    app:startDestination="@id/fragmentConnect">
 
     <fragment
         android:id="@+id/fragmentConnect"
@@ -14,6 +15,14 @@
             app:launchSingleTop="true"
             app:popUpTo="@id/main_graph"
             app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/goVideoCall"
+            app:destination="@+id/fragmentVideoCall"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/main_graph"
+            app:popUpToInclusive="true" />
+
     </fragment>
 
     <fragment
@@ -29,24 +38,8 @@
             app:popUpToInclusive="true" />
 
         <action
-            android:id="@+id/goCamera"
-            app:destination="@+id/fragmentCamera" />
-
-        <action
-            android:id="@+id/goWebView"
-            app:destination="@+id/fragmentWebView" />
-
-        <action
             android:id="@+id/goVideoCall"
             app:destination="@+id/fragmentVideoCall" />
-
-        <action
-            android:id="@+id/goCrossPlatform"
-            app:destination="@+id/fragmentCrossPlatform" />
-
-        <action
-            android:id="@+id/goConfidentiality"
-            app:destination="@+id/fragmentConfidentiality" />
     </fragment>
 
     <fragment
@@ -116,11 +109,36 @@
         <action
             android:id="@+id/goChat"
             app:destination="@+id/fragmentChat" />
+
+        <action
+            android:id="@+id/openMore"
+            app:destination="@+id/fragmentCallMore" />
+
+        <action
+            android:id="@+id/goPeople"
+            app:destination="@+id/fragmentPeople" />
+
+        <action
+            android:id="@+id/goCrossPlatform"
+            app:destination="@+id/fragmentCrossPlatform" />
+
+        <action
+            android:id="@+id/goConfidentiality"
+            app:destination="@+id/fragmentConfidentiality" />
+
+        <action
+            android:id="@+id/goCamera"
+            app:destination="@+id/fragmentCamera" />
+
+        <action
+            android:id="@+id/goWebView"
+            app:destination="@+id/fragmentWebView" />
+
     </fragment>
 
     <dialog
         android:id="@+id/fragmentChat"
-        android:name="com.screenmeet.live.feature.chat.ChatModalBottomSheet"
+        android:name="com.screenmeet.live.feature.call.chat.ChatModalBottomSheet"
         tools:layout="@layout/fragment_chat">
 
         <action
@@ -129,6 +147,18 @@
             app:launchSingleTop="true"
             app:popUpTo="@+id/main_graph"
             app:popUpToInclusive="true" />
+    </dialog>
+
+    <dialog
+        android:id="@+id/fragmentCallMore"
+        android:name="com.screenmeet.live.feature.call.more.MoreBottomSheet"
+        tools:layout="@layout/dialog_more">
+    </dialog>
+
+    <dialog
+        android:id="@+id/fragmentPeople"
+        android:name="com.screenmeet.live.feature.call.people.PeopleBottomSheet"
+        tools:layout="@layout/dialog_people">
     </dialog>
 
 </navigation>

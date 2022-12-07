@@ -1,18 +1,20 @@
 package com.screenmeet.live.overlay
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.core.view.setPadding
+import com.screenmeet.live.R
+import com.screenmeet.live.databinding.OverlayWidgetBinding
 import com.screenmeet.sdk.ScreenMeet.Companion.eglContext
+import com.screenmeet.sdk.VideoElement
 import org.webrtc.RendererCommon
-import org.webrtc.SurfaceViewRenderer
-import org.webrtc.VideoTrack
 import kotlin.math.abs
+import kotlin.math.min
 
 class VideoOverlay(context: Context) : BaseOverlay(context) {
 
@@ -26,82 +28,108 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
     private var initialYCoordinate = 0
     private var startY = 0
 
-    private var renderer: SurfaceViewRenderer? = null
-    private var videoTrack: VideoTrack? = null
+    private var binding: OverlayWidgetBinding? = null
 
     override fun buildOverlay(context: Context): View {
+        val inflater = LayoutInflater.from(context)
+        binding = OverlayWidgetBinding.inflate(inflater)
+
+
+
         overlayWidth = WindowManager.LayoutParams.WRAP_CONTENT
         overlayHeight = WindowManager.LayoutParams.WRAP_CONTENT
 
-        renderer = SurfaceViewRenderer(context).apply {
+        binding?.renderer?.apply {
             isClickable = false
             isFocusable = false
             setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
             setZOrderMediaOverlay(false)
 
-            init(
-                eglContext,
-                object : RendererCommon.RendererEvents {
-                    override fun onFirstFrameRendered() {}
+            val eventsListener = object : RendererCommon.RendererEvents {
+                override fun onFirstFrameRendered() {}
 
-                    override fun onFrameResolutionChanged(width: Int, height: Int, p2: Int) {
-                        val overlay = this@VideoOverlay.overlay
-                        val layoutParams = overlay?.layoutParams
+                override fun onFrameResolutionChanged(width: Int, height: Int, rotation: Int) {
+                    val screenRatio = if(screen.height > screen.width){
+                        if(width > height){
+                            2f
+                        } else 3f
+                    } else {
+                        if(width > height){
+                            3f
+                        } else 2f
+                    }
+
+                    val downScaleBy = min(
+                        screen.width / (screenRatio * width),
+                        screen.height / (screenRatio * height)
+                    )
+
+                    val (widgetWidth, widgetHeight) = Pair(
+                        width * downScaleBy,
+                        height * downScaleBy
+                    )
+
+                    val overlay = this@VideoOverlay.overlay
+                    overlay?.post {
+                        val layoutParams = overlay.layoutParams
                         if (layoutParams != null) {
-                            var widgetWidth = width
-                            var widgetHeight = height
-                            while (widgetWidth > widgetMaxSize || widgetHeight > widgetMaxSize) {
-                                val scaleStep = 1.3
-                                widgetWidth = (widgetWidth / scaleStep).toInt()
-                                widgetHeight = (widgetHeight / scaleStep).toInt()
-                            }
-                            layoutParams.width = widgetWidth
-                            layoutParams.height = widgetHeight
-                            Handler(Looper.getMainLooper()).post {
-                                windowManager.updateViewLayout(overlay, layoutParams)
-                                overlay.visibility = View.VISIBLE
-                            }
+                            layoutParams.width = widgetWidth.toInt()
+                            layoutParams.height = widgetHeight.toInt()
+                            windowManager.updateViewLayout(overlay, layoutParams)
+                            overlay.visibility = View.VISIBLE
                         }
+                        touchMoveEvent(widgetCornerMargin, widgetCornerMargin)
+                        touchUpEvent(widgetCornerMargin, widgetCornerMargin)
                     }
                 }
-            )
+            }
+            init(eglContext!!, eventsListener)
         }
 
-        return FrameLayout(context).apply {
+        return binding!!.root.apply {
             setPadding(widgetInnerPadding)
             setOnTouchListener { v, event ->
                 v.performClick()
                 processTouch(event)
                 return@setOnTouchListener true
             }
-            addView(renderer)
         }
     }
 
-    fun attachVideoTrack(track: VideoTrack) {
-        if (videoTrack != null) {
-            videoTrack?.removeSink(renderer)
-        }
-
-        renderer?.let {
-            overlay?.let { view ->
-                view.visibility = View.INVISIBLE
-                val layoutParams = view.layoutParams
-                if (layoutParams != null) {
-                    layoutParams.width = widgetMaxSize
-                    layoutParams.height = widgetMaxSize
-                    windowManager.updateViewLayout(overlay, layoutParams)
-                }
+    fun attachVideoTrack(videoElement: VideoElement) {
+        binding?.apply {
+            root.visibility = View.INVISIBLE
+            val layoutParams = root.layoutParams
+            if (layoutParams != null) {
+                layoutParams.width = widgetMaxSize
+                layoutParams.height = widgetMaxSize
+                windowManager.updateViewLayout(overlay, layoutParams)
             }
 
-            videoTrack = track
-            videoTrack?.addSink(it)
+            nameTv.text = videoElement.userName
+
+            if (videoElement.isAudioSharing) {
+                microButton.setImageResource(R.drawable.mic)
+                microButton.backgroundTintList = null
+                microButton.colorFilter = null
+            } else {
+                val context = root.context
+                microButton.setImageResource(R.drawable.mic_off)
+                val color = ContextCompat.getColor(context, R.color.bright_red)
+                microButton.setColorFilter(color)
+            }
+
+            val videoTrack = videoElement.track
+            val hasTrack = videoTrack != null
+            renderer.render(videoTrack)
+            renderer.isVisible = hasTrack
+            logo.isVisible = !hasTrack
         }
     }
 
     override fun hideOverlay() {
         super.hideOverlay()
-        videoTrack?.removeSink(renderer)
+        binding?.renderer?.clear()
     }
 
     private fun processTouch(event: MotionEvent) {

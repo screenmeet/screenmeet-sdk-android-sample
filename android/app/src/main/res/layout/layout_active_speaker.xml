@@ -41,27 +41,12 @@
 
     </com.otaliastudios.zoom.ZoomLayout>
 
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        android:layout_marginTop="64dp"
-        android:layout_marginEnd="64dp"
-        android:layout_marginBottom="64dp"
-        android:src="@drawable/ic_logo"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/zoomView" />
-
     <TextView
         android:id="@+id/nameTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="@dimen/marginStart"
-        android:layout_marginBottom="@dimen/marginStart"
-        android:text="TextView"
+        android:layout_marginEnd="@dimen/marginSmall"
+        android:layout_marginBottom="@dimen/marginSmall"
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -74,7 +59,7 @@
         android:id="@+id/microButton"
         android:layout_width="@dimen/minimum_btn_size"
         android:layout_height="@dimen/minimum_btn_size"
-        android:layout_margin="@dimen/marginStart"
+        android:layout_margin="@dimen/marginSmall"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -87,20 +72,20 @@
         android:id="@+id/cameraButton"
         android:layout_width="@dimen/minimum_btn_size"
         android:layout_height="@dimen/minimum_btn_size"
-        android:layout_margin="@dimen/marginStart"
+        android:layout_margin="@dimen/marginSmall"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/microButton"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/videocam" />
+        app:srcCompat="@drawable/ic_video_camera_back" />
 
     <ImageView
         android:id="@+id/hostImage"
         android:layout_width="@dimen/minimum_btn_size"
         android:layout_height="@dimen/minimum_btn_size"
-        android:layout_margin="@dimen/marginStart"
+        android:layout_margin="@dimen/marginSmall"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/cameraButton"

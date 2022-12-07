@@ -16,6 +16,6 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_gravity="end|bottom"
-        android:layout_margin="@dimen/marginStart" />
+        android:layout_margin="@dimen/marginSmall" />
 
 </FrameLayout>

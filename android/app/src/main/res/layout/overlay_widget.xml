@@ -2,8 +2,8 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="match_parent"
+    android:layout_width="@dimen/feature_item_size"
+    android:layout_height="@dimen/feature_item_size"
     android:backgroundTint="@color/dark_grey"
     android:background="@drawable/background_rounded_view">
 
@@ -13,14 +13,6 @@
         android:layout_height="match_parent"
         android:layout_margin="@dimen/marginSmallest"
         android:visibility="gone"/>
-
-    <ImageView
-        android:id="@+id/pinButton"
-        android:layout_width="@dimen/small_media_icon_size"
-        android:layout_height="@dimen/small_media_icon_size"
-        android:layout_margin="@dimen/marginSmall"
-        android:layout_gravity="top|end"
-        app:srcCompat="@drawable/ic_pin" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/logo"

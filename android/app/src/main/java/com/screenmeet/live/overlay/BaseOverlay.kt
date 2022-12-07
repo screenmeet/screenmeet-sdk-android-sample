@@ -7,15 +7,16 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import androidx.annotation.UiThread
 import kotlin.math.roundToInt
 
 abstract class BaseOverlay(val context: Context) {
 
-    protected lateinit var screen: ScreenConfig
+    protected val statusBarHeight by lazy { getStatusBarHeightFromRes() }
 
-    protected val statusBarHeight by lazy { statusBarHeight(context) }
+    protected lateinit var screen: ScreenConfig
 
     protected var overlayHeight: Int = WindowManager.LayoutParams.WRAP_CONTENT
     protected var overlayWidth: Int = WindowManager.LayoutParams.WRAP_CONTENT
@@ -26,7 +27,6 @@ abstract class BaseOverlay(val context: Context) {
 
     fun showOverlay(screenConfig: ScreenConfig): Boolean {
         screen = screenConfig
-
         removeIfAdded()
         val view = buildOverlay(context)
         applyOverlay(false, view, buildLayoutParams(overlayWidth, overlayHeight))
@@ -83,8 +83,9 @@ abstract class BaseOverlay(val context: Context) {
         layoutParams: WindowManager.LayoutParams
     ) {
         mainHandler.post {
-            if (attached) windowManager.updateViewLayout(view, layoutParams)
-            else windowManager.addView(view, layoutParams)
+            if (attached) {
+                windowManager.updateViewLayout(view, layoutParams)
+            } else windowManager.addView(view, layoutParams)
         }
     }
 
@@ -98,10 +99,6 @@ abstract class BaseOverlay(val context: Context) {
         params.gravity = Gravity.START or Gravity.TOP
         return params
     }
-
-    private fun getOverlayFlagsNotTouch() = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 
     private fun getOverlayFlagsTouch() = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
         WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
@@ -132,11 +129,15 @@ abstract class BaseOverlay(val context: Context) {
         return context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
-    private fun statusBarHeight(context: Context): Int {
-        var result = 0
-        val resourceId: Int =
-            context.resources.getIdentifier("status_bar_height", "dimen", "android")
-        if (resourceId > 0) result = context.resources.getDimensionPixelSize(resourceId)
-        return result
+    private fun getStatusBarHeightFromRes(): Int {
+        val hasMenuKey = ViewConfiguration.get(context).hasPermanentMenuKey()
+        val resourceId: Int = context.resources.getIdentifier(
+            "status_bar_height",
+            "dimen",
+            "android"
+        )
+        return if (resourceId > 0 && !hasMenuKey) {
+            context.resources.getDimensionPixelSize(resourceId)
+        } else 0
     }
 }

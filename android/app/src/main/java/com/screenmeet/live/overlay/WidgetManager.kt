@@ -2,7 +2,7 @@ package com.screenmeet.live.overlay
 
 import android.content.Context
 import androidx.activity.ComponentActivity
-import org.webrtc.VideoTrack
+import com.screenmeet.sdk.VideoElement
 
 class WidgetManager(val context: Context) {
 
@@ -15,19 +15,19 @@ class WidgetManager(val context: Context) {
         }
     }
 
-    fun showFloatingWidget(activity: ComponentActivity, videoTrack: VideoTrack) {
+    fun showFloatingWidget(activity: ComponentActivity, videoElement: VideoElement) {
         if (PermissionProvider.canDrawOverlay(context)) {
-            doShowFloatingWidget(configurationWatcher.screenConfig, videoTrack)
+            doShowFloatingWidget(configurationWatcher.screenConfig, videoElement)
         } else {
             PermissionProvider.requestOverlay(context, activity.activityResultRegistry) { granted ->
                 if (granted) {
-                    doShowFloatingWidget(configurationWatcher.screenConfig, videoTrack)
+                    doShowFloatingWidget(configurationWatcher.screenConfig, videoElement)
                 }
             }
         }
     }
 
-    private fun doShowFloatingWidget(screenConfig: ScreenConfig, track: VideoTrack) {
+    private fun doShowFloatingWidget(screenConfig: ScreenConfig, videoElement: VideoElement) {
         val overlayAttached: Boolean
         if (videoOverlay == null) {
             val overlay = VideoOverlay(context)
@@ -38,7 +38,7 @@ class WidgetManager(val context: Context) {
         } else overlayAttached = true
 
         if (overlayAttached) {
-            videoOverlay?.attachVideoTrack(track)
+            videoOverlay?.attachVideoTrack(videoElement)
         }
     }
 

@@ -56,6 +56,7 @@ class ConfidentialityFragment : Fragment(R.layout.fragment_ui_confidentiality) {
         return TextView(context).apply {
             tag = "tv"
             text = "Secret text $id"
+            setTextColor(resources.getColor(R.color.colorAccent, null))
             val maxSize = 25
             val minSize = 11
             textSize = (Random().nextInt(maxSize) + minSize).toFloat()

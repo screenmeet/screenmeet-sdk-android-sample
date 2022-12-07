@@ -16,6 +16,7 @@ import com.screenmeet.live.SupportApplication.Companion.startListeningForeground
 import com.screenmeet.live.SupportApplication.Companion.stopListeningForeground
 import com.screenmeet.live.databinding.ActivityMainBinding
 import com.screenmeet.live.overlay.WidgetManager
+import com.screenmeet.live.util.LogsDebugListener
 import com.screenmeet.live.util.NavigationDispatcher
 import com.screenmeet.sdk.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +31,8 @@ class MainActivity : AppCompatActivity() {
 
     private var widgetManager: WidgetManager? = null
 
+    private val logsListener = LogsDebugListener()
+
     @Inject
     lateinit var navigationDispatcher: NavigationDispatcher
 
@@ -40,21 +43,19 @@ class MainActivity : AppCompatActivity() {
 
         binding.disconnect.setOnClickListener {
             showAlert(
-                "Disconnect",
-                "Are you sure you want to disconnect?"
-            ) {
-                ScreenMeet.disconnect()
-            }
+                dialogTittle = "Disconnect",
+                message = "Are you sure you want to disconnect?",
+                confirmed = ScreenMeet::disconnect
+            )
         }
 
         applyEdgeToEdge()
         applyInsets()
         initNavigation()
 
-        setWindowFlag(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false)
-        window.statusBarColor = Color.TRANSPARENT
-
         ScreenMeet.registerEventListener(eventListener)
+        ScreenMeet.registerEventListener(logsListener)
+
         lifecycleScope.launchWhenResumed { observeNavigationCommands() }
         binding.videoCall.setOnClickListener {
             navigationDispatcher.emit { it.navigate(R.id.goVideoCall) }
@@ -67,6 +68,17 @@ class MainActivity : AppCompatActivity() {
         updateHeader()
     }
 
+    private fun applyInsets() {
+        binding.statusView.applyInsetter { type(statusBars = true) { padding() } }
+    }
+
+    private fun applyEdgeToEdge() {
+        @Suppress("Deprecation")
+        setWindowFlag(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false)
+        window.statusBarColor = Color.TRANSPARENT
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
+
     private fun setWindowFlag(bits: Int, on: Boolean) {
         val win = window
         val winParams = win.attributes
@@ -75,32 +87,16 @@ class MainActivity : AppCompatActivity() {
         win.attributes = winParams
     }
 
-    private fun applyInsets() {
-        binding.statusView.applyInsetter { type(statusBars = true) { padding() } }
-    }
-
-    private fun applyEdgeToEdge() {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-    }
-
     private fun initNavigation() {
         (supportFragmentManager.findFragmentById(R.id.fragmentHost) as NavHostFragment).also { navHost ->
             val navInflater = navHost.navController.navInflater
-            val navGraph = navInflater.inflate(R.navigation.main_graph).apply {
-                setStartDestination(R.id.fragmentConnect)
-            }
+            val navGraph = navInflater.inflate(R.navigation.main_graph)
             navHost.navController.graph = navGraph
             navController = navHost.navController
 
             navHost.navController.addOnDestinationChangedListener { _, destination, _ ->
-                val showWidgetManager =
-                    destination.id != R.id.fragmentConnect &&
-                        destination.id != R.id.fragmentVideoCall &&
-                        destination.id != R.id.fragmentChat
-
-                if (showWidgetManager) displayWidget()
-                else widgetManager?.hideFloatingWidget()
                 binding.videoCall.isVisible = destination.id == R.id.fragmentMain
+                displayWidgetIfNeeded()
             }
         }
     }
@@ -128,9 +124,22 @@ class MainActivity : AppCompatActivity() {
             updateHeader()
         }
 
-        override fun onParticipantMediaStateChanged(participant: Participant) {
-            displayWidget()
+        override fun onParticipantAudioCreated(participant: Participant) {
+            displayWidgetIfNeeded()
         }
+
+        override fun onParticipantAudioStopped(participant: Participant) {
+            displayWidgetIfNeeded()
+        }
+
+        override fun onParticipantVideoCreated(participant: Participant, video: VideoElement) {
+            displayWidgetIfNeeded()
+        }
+
+        override fun onParticipantVideoStopped(
+            participant: Participant,
+            source: ScreenMeet.VideoSource
+        ) = displayWidgetIfNeeded()
 
         override fun onFeatureStarted(feature: Feature) {
             binding.stopRemoteAssist.isVisible = true
@@ -162,43 +171,48 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun displayWidget() {
-        val shouldNotShow =
-            navController.currentDestination?.id == R.id.fragmentConnect ||
-                navController.currentDestination?.id == R.id.fragmentVideoCall ||
-                navController.currentDestination?.id == R.id.fragmentChat
-        if (shouldNotShow) return
-
-        val participant = ScreenMeet.participants().firstOrNull { it.videoTrack != null }
-        if (participant != null) widgetManager?.showFloatingWidget(
-            this@MainActivity,
-            participant.videoTrack!!
-        ) else widgetManager?.hideFloatingWidget()
+    private fun displayWidgetIfNeeded() {
+        val currentDestinationId = navController.currentDestination?.id
+        val shouldNotShow = currentDestinationId == R.id.fragmentConnect
+                || currentDestinationId == R.id.fragmentVideoCall
+                || currentDestinationId == R.id.fragmentChat
+                || currentDestinationId == R.id.fragmentCallMore
+                || currentDestinationId == R.id.fragmentPeople
+        if(!shouldNotShow){
+            val activeSpeaker = ScreenMeet.currentActiveSpeaker()
+            if (activeSpeaker != null) {
+                widgetManager?.showFloatingWidget(this@MainActivity, activeSpeaker)
+            } else widgetManager?.hideFloatingWidget()
+        } else widgetManager?.hideFloatingWidget()
     }
 
     private fun updateHeader() {
-        when (ScreenMeet.connectionState().state) {
-            ScreenMeet.SessionState.CONNECTING,
-            ScreenMeet.SessionState.RECONNECTING -> {
+        when (ScreenMeet.connectionState()) {
+            is ScreenMeet.ConnectionState.Connecting,
+            is ScreenMeet.ConnectionState.Reconnecting -> {
                 binding.statusView.isVisible = true
                 binding.statusView.setBackgroundColor(ContextCompat.getColor(this, R.color.yellow))
-                binding.connectionTv.text = "Session connecting"
+                binding.connectionTv.text = getString(R.string.session_connecting)
             }
-            ScreenMeet.SessionState.CONNECTED -> {
+            is ScreenMeet.ConnectionState.Connected -> {
                 startListeningForeground()
                 binding.statusView.isVisible = true
                 binding.statusView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
-                binding.connectionTv.text = "Session connected"
+                binding.connectionTv.text = getString(R.string.session_connected)
             }
-            ScreenMeet.SessionState.DISCONNECTED -> {
+            is ScreenMeet.ConnectionState.Disconnected  -> {
                 stopListeningForeground()
                 binding.statusView.isVisible = false
                 binding.stopRemoteAssist.isVisible = false
-                navigationDispatcher.emit { it.navigate(R.id.goConnect) }
+                navigationDispatcher.emit {
+                    if(it.currentBackStackEntry?.destination?.id != R.id.fragmentConnect) {
+                        it.navigate(R.id.goConnect)
+                    }
+                }
             }
         }
 
-        val activeParticipant = ScreenMeet.participants().size
-        binding.participantsTv.text = "Participants: $activeParticipant"
+        val participantsCount = ScreenMeet.participants().size
+        binding.participantsTv.text = getString(R.string.session_participants, participantsCount)
     }
 }

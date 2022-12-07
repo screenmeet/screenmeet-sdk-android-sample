@@ -8,21 +8,26 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21"
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.40.1'
+        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.44'
     }
 }
 
 allprojects {
     repositories {
-        def mavenUrl = System.getenv("SM_MAVEN_URL")
+        def mavenUrl = System.getenv("SM_MAVEN_REPO")
         if(mavenUrl != null && !mavenUrl.isBlank()){
-            maven { url = mavenUrl}
+            maven {
+                url "$System.env.SM_MAVEN_REPO"
+                credentials {
+                    username "$System.env.SM_SDK_USER"
+                    password "$System.env.SM_SDK_PASS"
+                }
+            }
         }
-        maven {
-            url "https://nexus.screenmeet.com/repository/maven-releases/"
-        }
+        maven { url "https://nexus.screenmeet.com/repository/maven-releases/" }
+
         maven {
             // All of React Native (JS, Android binaries) is installed from npm
             url "$rootDir/../node_modules/react-native/android"

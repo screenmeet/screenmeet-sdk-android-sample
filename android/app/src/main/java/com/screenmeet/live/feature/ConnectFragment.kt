@@ -13,7 +13,11 @@ import com.screenmeet.live.R
 import com.screenmeet.live.databinding.FragmentConnectBinding
 import com.screenmeet.live.util.NavigationDispatcher
 import com.screenmeet.live.util.viewBinding
-import com.screenmeet.sdk.*
+import com.screenmeet.sdk.CompletionError
+import com.screenmeet.sdk.CompletionHandler
+import com.screenmeet.sdk.ScreenMeet
+import com.screenmeet.sdk.SessionEventListener
+import com.screenmeet.sdk.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
 import javax.inject.Inject
@@ -30,7 +34,7 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
         super.onViewCreated(view, savedInstanceState)
         applyInsets()
 
-        if (ScreenMeet.connectionState().state == ScreenMeet.SessionState.CONNECTED) {
+        if (ScreenMeet.connectionState() is ScreenMeet.ConnectionState.Connected) {
             navigationDispatcher.emit { it.navigate(R.id.goMain) }
         } else {
             binding.otpView.setOtpCompletionListener { code -> connect(code) }
@@ -62,24 +66,27 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
 
     private fun connectionSuccess() {
         loading(false)
-        ScreenMeet.shareScreen()
         binding.hintTv.isVisible = false
         binding.resultTv.isVisible = true
         binding.resultTv.setTextColor(Color.WHITE)
         binding.resultTv.text = "Connected!"
-        navigationDispatcher.emit { it.navigate(R.id.goMain) }
+        navigationDispatcher.emit { it.navigate(R.id.goVideoCall) }
     }
 
     private fun connectionError(error: CompletionError) {
-        loading(false)
-        when (error.code) {
-            ErrorCode.CAPTCHA_ERROR -> {
-                error.challenge?.let {
-                    showCaptchaDialog(it)
-                } ?: showError(error.message)
+        when (error) {
+            is CompletionError.RequestedCaptcha -> showCaptchaDialog(error.challenge)
+            is CompletionError.WaitingForKnock  -> {
+                showError(getString(R.string.waiting_for_knock), false)
             }
-            ErrorCode.WAITING_FOR_KNOCK_PERMISSION -> showError(getString(R.string.waiting_for_knock))
-            else -> showError(error.message)
+            is CompletionError.KnockDenied -> {
+                loading(false)
+                showError(getString(R.string.knock_denied))
+            }
+            else -> {
+                loading(false)
+                showError(error.message)
+            }
         }
     }
 
@@ -89,7 +96,7 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
         binding.loadingIndicator.applyInsetter { type(ime = true) { margin() } }
     }
 
-    private fun showCaptchaDialog(challenge: Challenge) {
+    private fun showCaptchaDialog(challenge: CompletionError.RequestedCaptcha.Challenge) {
         val context = context ?: return
         AlertDialog.Builder(context).apply {
             val inflater = layoutInflater
@@ -109,15 +116,36 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
         }
     }
 
-    private fun showError(message: String) {
-        binding.otpView.editableText.clear()
+    private fun showError(message: String, clear: Boolean = true) {
+        if(clear) {
+            binding.otpView.editableText.clear()
+        }
         binding.resultTv.isVisible = true
-        binding.resultTv.setTextColor(
-            ContextCompat.getColor(
-                binding.root.context,
-                R.color.bright_red
-            )
-        )
+        val color = ContextCompat.getColor(binding.root.context, R.color.bright_red)
+        binding.resultTv.setTextColor(color)
         binding.resultTv.text = message
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ScreenMeet.registerEventListener(sessionEventListener)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        ScreenMeet.unregisterEventListener(sessionEventListener)
+    }
+
+    private val sessionEventListener = object : SessionEventListener {
+
+        override fun onConnectionStateChanged(newState: ScreenMeet.ConnectionState) {
+            if(newState is ScreenMeet.ConnectionState.Disconnected){
+                loading(false)
+                if (newState.reason != ScreenMeet.ConnectionState.Disconnected.Reason.KnockDenied) {
+                    showError(getString(R.string.connection_error))
+                }
+            }
+        }
+
     }
 }

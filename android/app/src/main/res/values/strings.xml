@@ -3,4 +3,22 @@
     <string name="me">Me</string>
     <string name="captcha_not_robot">I\'m not a robot</string>
     <string name="waiting_for_knock">Waiting for permission to join</string>
+    <string name="knock_denied">Session knock denied</string>
+    <string name="connection_error">Connection error</string>
+    <string name="session_connecting">Session connecting</string>
+    <string name="session_connected">Session connected</string>
+    <string name="session_participants">Participants: %1$d</string>
+
+    <string name="share_screen">Share Screen</string>
+    <string name="share_screen_stop">Stop Sharing Screen</string>
+    <string name="share_cam_front">Share Camera Front</string>
+    <string name="share_cam_front_stop">Stop Sharing Camera Front</string>
+    <string name="share_cam_back">Share Camera Back</string>
+    <string name="share_cam_back_stop">Stop Sharing Camera Back</string>
+    <string name="share_audio">Share Audio</string>
+    <string name="share_audio_stop">Stop Sharing Audio</string>
+    <string name="chat">Chat</string>
+    <string name="people">People</string>
+    <string name="view_confidentiality">View Confidentiality Demo</string>
+    <string name="web_confidentiality">Web Content Confidentiality Demo</string>
 </resources>
