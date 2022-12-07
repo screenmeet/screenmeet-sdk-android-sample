@@ -1,4 +1,4 @@
-package com.screenmeet.live.feature.chat
+package com.screenmeet.live.feature.call.chat
 
 import android.app.Dialog
 import android.content.res.Resources
@@ -16,7 +16,6 @@ import com.screenmeet.live.databinding.FragmentChatBinding
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.SessionEventListener
 import com.screenmeet.sdk.domain.entity.ChatMessage
-import dev.chrisbanes.insetter.applyInsetter
 
 class ChatModalBottomSheet : BottomSheetDialogFragment() {
 
@@ -59,7 +58,6 @@ class ChatModalBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        applyInsets()
         binding.sendMessageBtn.setOnClickListener { _: View? ->
             val text = binding.chatEt.text.toString().trim { it <= ' ' }
             if (text.isNotEmpty()) {
@@ -68,10 +66,6 @@ class ChatModalBottomSheet : BottomSheetDialogFragment() {
             }
         }
         displayMessages()
-    }
-
-    private fun applyInsets() {
-        binding.chatLayout.applyInsetter { type(ime = true) { margin() } }
     }
 
     private fun displayMessages() {

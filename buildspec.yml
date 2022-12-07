@@ -1,0 +1,47 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - cd android
+      - mkdir cmdline-tools
+      - cd cmdline-tools
+      - wget https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
+      - unzip commandlinetools-linux-*.zip >/dev/null
+      - mv cmdline-tools/ tools/
+      - tools/bin/sdkmanager --update >/dev/null
+      - yes | tools/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" >/dev/null
+      - cd ..
+      - export ANDROID_SDK_ROOT=$pwd
+      - npm install --location=global appcenter-cli
+  build:
+    commands:
+      - |
+        if [ "$ENVIRONMENT" = "ci" ]; then
+          ./gradlew assembleDebug
+        fi
+      - |
+        if [ "$ENVIRONMENT" = "qa" ]; then
+          ./gradlew assembleDebug
+        fi
+      - |
+        if [ "$ENVIRONMENT" = "prod" ]; then
+          ./gradlew assembleRelease
+        fi
+  post_build:
+    commands:
+      - appcenter login --token $APP_CENTER_TOKEN
+      - |
+        if [ "$ENVIRONMENT" = "ci" ]; then
+          appcenter distribute release -f ${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/debug/app-debug.apk -g Test --app eugene-hockey-8awm/ScreenMeet-Live-CI
+        fi
+      - |
+        if [ "$ENVIRONMENT" = "qa" ]; then
+          appcenter distribute release -f${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/debug/app-debug.apk -g Test --app eugene-hockey-8awm/LIVE-SDK-Sample-APP
+        fi
+      - |
+        if [ "$ENVIRONMENT" = "prod" ]; then
+          appcenter distribute release -f ${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/release/app-release.apk -g Test --app eugene-hockey-8awm/ScreenMeet-Live-PROD
+        fi

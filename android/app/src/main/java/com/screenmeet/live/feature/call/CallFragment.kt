@@ -1,368 +1,330 @@
 package com.screenmeet.live.feature.call
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.widget.ImageButton
+import androidx.core.content.ContextCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.FragmentCallBinding
-import com.screenmeet.live.util.NavigationDispatcher
-import com.screenmeet.live.util.viewBinding
-import com.screenmeet.sdk.Identity
+import com.screenmeet.live.util.*
 import com.screenmeet.sdk.Participant
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.SessionEventListener
+import com.screenmeet.sdk.VideoElement
 import com.screenmeet.sdk.domain.entity.ChatMessage
 import dagger.hilt.android.AndroidEntryPoint
+import dev.chrisbanes.insetter.applyInsetter
+import kotlinx.coroutines.launch
 import org.webrtc.EglBase
-import org.webrtc.RendererCommon.RendererEvents
-import org.webrtc.VideoFrame
-import org.webrtc.VideoSink
-import org.webrtc.VideoTrack
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class CallFragment : Fragment(R.layout.fragment_call) {
 
-    @Inject
-    lateinit var navigationDispatcher: NavigationDispatcher
+    private val binding by viewBinding(FragmentCallBinding::bind)
+    private val viewModel by viewModels<CallViewModel>()
 
     private lateinit var participantsAdapter: ParticipantsAdapter
     private lateinit var eglBase: EglBase.Context
 
-    private var localVideoTrack: VideoTrack? = null
-    private var activeParticipant: Participant? = null
-
-    private val binding by viewBinding(FragmentCallBinding::bind)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         // The same eglContext as a capturing one should be used to preview camera
         eglBase = ScreenMeet.eglContext!!
-        participantsAdapter = ParticipantsAdapter(eglBase)
+        participantsAdapter = ParticipantsAdapter(lifecycleScope, eglBase){ video ->
+            viewModel.pinVideo(video)
+        }
 
         binding.apply {
-            localRenderer.renderer.init(eglBase, null)
-            localRenderer.renderer.setZOrderMediaOverlay(true)
-            localRenderer.renderer.setZOrderOnTop(true)
+            root.applyInsetter {
+                type(statusBars = true, navigationBars = true, displayCutout = true) { padding() }
+            }
 
-            activeSpeakerRenderer.zoomView.setHasClickableChildren(true)
-            activeSpeakerRenderer.renderer.setZOrderOnTop(false)
-            activeSpeakerRenderer.renderer.init(
-                eglBase,
-                object : RendererEvents {
-                    override fun onFirstFrameRendered() {}
+            more.setOnClickListener {
+                viewModel.openMore()
+            }
 
-                    override fun onFrameResolutionChanged(width: Int, height: Int, i2: Int) {
-                        Handler(Looper.getMainLooper()).post {
-                            val layoutParams = activeSpeakerRenderer.renderer.layoutParams
-                            layoutParams.width = width
-                            layoutParams.height = height
-                            activeSpeakerRenderer.zoomView.updateViewLayout(
-                                activeSpeakerRenderer.renderer, layoutParams
-                            )
-                        }
+            activeStreamRenderer.renderer.init(eglBase, null)
+            activeStreamRenderer.renderer.listenFramesStuck(lifecycleScope) { stuck ->
+                binding.activeStreamRenderer.frameStuckSpinner.isVisible = stuck
+            }
+            participantsRecycler.adapter = participantsAdapter
+
+            setButtonBackgroundColor(hangUp, R.color.bright_red)
+            container.setOnClickListener {
+                viewModel.controlsVisible(true)
+            }
+            hangUp.setOnClickListener { ScreenMeet.disconnect() }
+        }
+
+        getNavigationResult<Int?>(R.id.fragmentVideoCall, NAVIGATION_DESTINATION){ dest ->
+            dest?.let {
+                viewModel.navigate(it)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.participants.collect { participants ->
+                    val hasActiveStream = viewModel.activeSpeaker.value != null
+                    binding.activeStreamRenderer.root.isVisible = hasActiveStream
+                    if (hasActiveStream) {
+                        displayActiveSpeakerLayout(participants)
+                    } else displayGridLayout(participants)
+                    loadState()
+                }
+            }
+        }
+        lifecycleScope.launchWhenResumed {
+            viewModel.activeSpeaker.collect { activeTrackId ->
+                val context = binding.root.context
+                val hasActiveStream = activeTrackId != null
+                binding.activeStreamRenderer.root.isVisible = hasActiveStream
+                repeat(binding.participantsRecycler.itemDecorationCount){
+                    binding.participantsRecycler.removeItemDecorationAt(it)
+                }
+                if (hasActiveStream){
+                    binding.participantsRecycler.layoutManager = LinearLayoutManager(
+                        context,
+                        LinearLayoutManager.HORIZONTAL,
+                        false
+                    )
+                    val linearItemDecoration = ParticipantsHorizontalItemDecoration(30)
+                    binding.participantsRecycler.addItemDecoration(linearItemDecoration)
+                } else {
+                    binding.participantsRecycler.layoutManager = GridLayoutManager(context, 2)
+                    val gridItemDecoration = ParticipantsGridItemDecoration(2, 30)
+                    binding.participantsRecycler.addItemDecoration(gridItemDecoration)
+                }
+                loadState()
+            }
+        }
+        lifecycleScope.launchWhenResumed {
+            viewModel.showControls.collect { show ->
+                activity?.let { act ->
+                    val insetsController = WindowInsetsControllerCompat(
+                        act.window,
+                        act.findViewById(R.id.root)
+                    )
+                    if(show){
+                        insetsController.show(WindowInsetsCompat.Type.systemBars())
+                    } else {
+                        insetsController.hide(WindowInsetsCompat.Type.systemBars())
                     }
                 }
-            )
 
-            participantsRecycler.adapter = participantsAdapter
-            participantsRecycler.layoutManager = LinearLayoutManager(root.context)
-
-            chat.setOnClickListener { navigationDispatcher.emit { it.navigate(R.id.goChat) } }
-
-            buttonSidebar.setOnClickListener {
-                if (!participantsRecycler.isVisible) {
-                    buttonSidebar.setImageResource(R.drawable.ic_arrow_right)
-                    participantsRecycler.isVisible = true
-                    displayParticipants(ScreenMeet.participants())
-                } else {
-                    buttonSidebar.setImageResource(R.drawable.ic_arrow_left)
-                    participantsRecycler.isVisible = false
-                    participantsAdapter.dispose(participantsRecycler)
-                    participantsAdapter.submitList(listOf())
+                if(show) {
+                    showControls()
+                } else hideControls()
+            }
+        }
+        lifecycleScope.launchWhenResumed {
+            viewModel.hasUnread.collect { hasUnread ->
+                binding.unreadMark.isVisible = hasUnread
+                if(hasUnread && !viewModel.showControls.value){
+                    playChat()
                 }
             }
-            setButtonBackgroundColor(hangUp, R.color.bright_red)
         }
-    }
-
-    private val eventListener: SessionEventListener = object : SessionEventListener {
-        override fun onParticipantJoined(participant: Participant) {
-            displayParticipants(ScreenMeet.participants())
-        }
-
-        override fun onParticipantLeft(participant: Participant) {
-            displayParticipants(ScreenMeet.participants())
-        }
-
-        override fun onLocalVideoCreated(videoTrack: VideoTrack) {
-            applyControlsState()
-            renderLocalVideoTrack(videoTrack)
-        }
-
-        override fun onLocalVideoStopped() {
-            applyControlsState()
-            renderLocalVideoTrack(null)
-        }
-
-        override fun onLocalAudioCreated() {
-            applyControlsState()
-        }
-
-        override fun onLocalAudioStopped() {
-            applyControlsState()
-        }
-
-        override fun onParticipantMediaStateChanged(participant: Participant) {
-            displayParticipants(ScreenMeet.participants())
-        }
-
-        override fun onConnectionStateChanged(newState: ScreenMeet.ConnectionState) {
-            when (newState.state) {
-                ScreenMeet.SessionState.CONNECTED -> loadState()
-                ScreenMeet.SessionState.DISCONNECTED -> sessionEnded()
-                else -> {}
+        lifecycleScope.launchWhenResumed {
+            for (event in viewModel.eventChannel) {
+                if(!viewModel.showControls.value){
+                    playChat()
+                }
             }
         }
-
-        override fun onActiveSpeakerChanged(participant: Participant) {
-            displayParticipants(ScreenMeet.participants())
-        }
-
-        override fun onChatMessage(chatMessage: ChatMessage) {}
     }
 
-    fun renderLocalVideoTrack(videoTrack: VideoTrack?) {
-        if (videoTrack != null) {
-            localVideoTrack = videoTrack
-            localVideoTrack?.addSink(rotationSink)
-        } else {
-            binding.localRenderer.renderer.clearImage()
-            localVideoTrack = null
-        }
+    private fun displayActiveSpeakerLayout(participants: List<VideoElement>){
+        dispatchParticipants(participants)
     }
 
-    private val rotationSink = VideoSink { videoFrame: VideoFrame ->
-        val frame = VideoFrame(videoFrame.buffer, 0, videoFrame.timestampNs)
-        binding.localRenderer.renderer.onFrame(frame)
+    private fun displayGridLayout(participants: List<VideoElement>){
+        dispatchParticipants(participants)
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        ScreenMeet.registerEventListener(eventListener)
-        binding.localRenderer.renderer.clearImage()
-        enableButtons()
-        loadState()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        participantsAdapter.dispose(binding.participantsRecycler)
-        localVideoTrack?.removeSink(rotationSink)
-        ScreenMeet.unregisterEventListener(eventListener)
-    }
-
-    private fun displayParticipants(participants: List<Participant>) {
-        if (participants.isNotEmpty()) {
-            activeParticipant = participants.firstOrNull { it.id == activeParticipant?.id }
-            if (activeParticipant == null) {
-                activeParticipant = participants.first()
-            }
-            displayActiveSpeaker(activeParticipant!!)
-            participantsAdapter.submitList(participants.filter { it.id != activeParticipant?.id })
-        } else {
-            activeParticipant = null
-            activeSpeakerAbsent()
-            participantsAdapter.submitList(listOf())
-        }
+    private fun dispatchParticipants(participants: List<VideoElement>){
+        participantsAdapter.submitList(participants)
     }
 
     private fun loadState() {
-        val participants = ScreenMeet.participants()
-        displayParticipants(participants)
-        val localVideoTrack = ScreenMeet.localVideoTrack()
-        renderLocalVideoTrack(localVideoTrack)
-
-        applyControlsState()
-    }
-
-    private fun sessionEnded() {
-        renderLocalVideoTrack(null)
-        binding.localRenderer.renderer.release()
-        binding.activeSpeakerRenderer.renderer.release()
-        participantsAdapter.dispose(binding.participantsRecycler)
-    }
-
-    private fun enableButtons() {
-        binding.micro.setOnClickListener {
-            switchButton(binding.micro, pending = true, enabled = true)
-            if (ScreenMeet.localMediaState().isAudioActive) {
-                ScreenMeet.stopAudioSharing()
-            } else ScreenMeet.shareAudio()
-        }
-        binding.camera.setOnClickListener {
-            switchButton(binding.camera, pending = true, enabled = true)
-            when (ScreenMeet.localMediaState().videoState.source) {
-                ScreenMeet.VideoSource.BACK_CAMERA,
-                ScreenMeet.VideoSource.FRONT_CAMERA,
-                ScreenMeet.VideoSource.CUSTOM_CAMERA -> ScreenMeet.stopVideoSharing()
-                ScreenMeet.VideoSource.SCREEN,
-                ScreenMeet.VideoSource.NONE -> ScreenMeet.shareCamera(true)
-            }
-        }
-        binding.cameraSwitch.setOnClickListener {
-            switchButton(binding.cameraSwitch, pending = true, enabled = true)
-            when (ScreenMeet.localMediaState().videoState.source) {
-                ScreenMeet.VideoSource.BACK_CAMERA -> ScreenMeet.shareCamera(true)
-                ScreenMeet.VideoSource.FRONT_CAMERA -> ScreenMeet.shareCamera(false)
-                ScreenMeet.VideoSource.CUSTOM_CAMERA,
-                ScreenMeet.VideoSource.SCREEN,
-                ScreenMeet.VideoSource.NONE -> {
+        val uiVideos = ScreenMeet.uiVideos(includeLocal = true)
+        val activeSpeakerId = viewModel.activeSpeaker.value
+        if (activeSpeakerId != null) {
+            val activeVideo = uiVideos.firstOrNull { it.id == activeSpeakerId }
+            val participantsVideos = uiVideos.filter { it.id != activeSpeakerId }
+            binding.apply {
+                activeStreamRenderer.nameTv.text = activeVideo?.userName
+                val context = binding.root.context
+                val pinColor = ContextCompat.getColor(context, R.color.enabled_button)
+                activeStreamRenderer.pinButton.setColorFilter(pinColor)
+                activeStreamRenderer.pinButton.setOnClickListener {
+                    viewModel.pinVideo(null)
                 }
-            }
-        }
-        binding.screen.setOnClickListener {
-            switchButton(binding.screen, pending = true, enabled = true)
-            when (ScreenMeet.localMediaState().videoState.source) {
-                ScreenMeet.VideoSource.BACK_CAMERA,
-                ScreenMeet.VideoSource.FRONT_CAMERA,
-                ScreenMeet.VideoSource.CUSTOM_CAMERA,
-                ScreenMeet.VideoSource.NONE -> ScreenMeet.shareScreen()
-                ScreenMeet.VideoSource.SCREEN -> ScreenMeet.stopVideoSharing()
-            }
-        }
-        binding.hangUp.setOnClickListener { ScreenMeet.disconnect() }
-    }
 
-    private fun applyControlsState() {
-        when (ScreenMeet.localMediaState().videoState.source) {
-            ScreenMeet.VideoSource.SCREEN -> {
-                switchButton(binding.screen, pending = false, enabled = true)
-                switchButton(binding.camera, pending = false, enabled = false)
-                binding.cameraSwitch.isVisible = false
-                binding.camera.setImageResource(R.drawable.videocam_off)
-                binding.localRenderer.cameraButton.setImageResource(R.drawable.screenshot)
+                if (activeVideo?.isAudioSharing == true) {
+                    activeStreamRenderer.microButton.setImageResource(R.drawable.mic)
+                    activeStreamRenderer.microButton.backgroundTintList = null
+                    activeStreamRenderer.microButton.colorFilter = null
+                } else {
+                    activeStreamRenderer.microButton.setImageResource(R.drawable.mic_off)
+                    val color = ContextCompat.getColor(context, R.color.bright_red)
+                    activeStreamRenderer.microButton.setColorFilter(color)
+                }
+
+                val videoTrack = activeVideo?.track
+                if (videoTrack != null) {
+                    activeStreamRenderer.renderer.render(videoTrack)
+                } else activeStreamRenderer.renderer.clear()
+
+                val hasTrack = videoTrack != null
+                binding.activeStreamRenderer.renderer.isVisible = hasTrack
+                binding.activeStreamRenderer.logo.isVisible = !hasTrack
             }
-            ScreenMeet.VideoSource.FRONT_CAMERA, ScreenMeet.VideoSource.BACK_CAMERA -> {
-                switchButton(binding.screen, pending = false, enabled = false)
-                switchButton(binding.camera, pending = false, enabled = true)
-                switchButton(binding.cameraSwitch, pending = false, enabled = true)
-                binding.cameraSwitch.isVisible = true
-                binding.camera.setImageResource(R.drawable.videocam)
-                binding.localRenderer.cameraButton.setImageResource(R.drawable.videocam)
-            }
-            ScreenMeet.VideoSource.CUSTOM_CAMERA -> {
-                switchButton(binding.screen, pending = false, enabled = false)
-                switchButton(binding.camera, pending = false, enabled = true)
-                switchButton(binding.cameraSwitch, pending = false, enabled = true)
-                binding.cameraSwitch.isVisible = false
-                binding.camera.setImageResource(R.drawable.videocam)
-                binding.localRenderer.cameraButton.setImageResource(R.drawable.videocam)
-            }
-            ScreenMeet.VideoSource.NONE -> {
-                switchButton(binding.camera, pending = false, enabled = false)
-                switchButton(binding.screen, pending = false, enabled = false)
-                binding.cameraSwitch.isVisible = false
-                binding.camera.setImageResource(R.drawable.videocam_off)
-                binding.localRenderer.cameraButton.setImageResource(R.drawable.videocam_off)
-            }
-        }
-        val audioActive = ScreenMeet.localMediaState().isAudioActive
-        switchButton(binding.micro, false, audioActive)
-        if (audioActive) {
-            binding.micro.setImageResource(R.drawable.mic)
-            binding.localRenderer.microButton.setImageResource(R.drawable.mic)
+            viewModel.updateParticipants(participantsVideos)
         } else {
-            binding.micro.setImageResource(R.drawable.mic_off)
-            binding.localRenderer.microButton.setImageResource(R.drawable.mic_off)
-        }
-    }
-
-    private fun displayActiveSpeaker(participant: Participant) {
-        binding.apply {
-            activeSpeakerRenderer.nameTv.text = participant.identity.name
-            activeSpeakerRenderer.nameTv.isVisible = true
-            activeSpeakerRenderer.hostImage.isVisible =
-                participant.identity.role == Identity.Role.HOST
-            activeSpeakerRenderer.microButton.isVisible = true
-
-            if (participant.mediaState.isAudioActive) {
-                activeSpeakerRenderer.microButton.setImageResource(R.drawable.mic)
-            } else activeSpeakerRenderer.microButton.setImageResource(R.drawable.mic_off)
-            activeSpeakerRenderer.cameraButton.isVisible = true
-
-            when (participant.mediaState.videoState.source) {
-                ScreenMeet.VideoSource.BACK_CAMERA,
-                ScreenMeet.VideoSource.FRONT_CAMERA,
-                ScreenMeet.VideoSource.CUSTOM_CAMERA -> {
-                    activeSpeakerRenderer.cameraButton.setImageResource(R.drawable.videocam)
-                }
-                ScreenMeet.VideoSource.SCREEN -> {
-                    activeSpeakerRenderer.cameraButton.setImageResource(R.drawable.screenshot)
-                }
-                ScreenMeet.VideoSource.NONE -> {
-                    activeSpeakerRenderer.cameraButton.setImageResource(R.drawable.videocam_off)
-                }
-            }
-
-            updateTrack(participant.videoTrack)
-        }
-    }
-
-    private fun activeSpeakerAbsent() {
-        binding.apply {
-            activeSpeakerRenderer.nameTv.isVisible = false
-            activeSpeakerRenderer.hostImage.isVisible = false
-            activeSpeakerRenderer.microButton.isVisible = false
-            activeSpeakerRenderer.cameraButton.isVisible = false
-            activeSpeakerRenderer.renderer.isVisible = false
-            activeSpeakerRenderer.logo.isVisible = true
-            activeSpeakerRenderer.renderer.clearImage()
-        }
-    }
-
-    private fun updateTrack(videoTrack: VideoTrack?) {
-        binding.apply {
-            if (videoTrack == null) {
-                activeSpeakerRenderer.renderer.clearImage()
-                activeSpeakerRenderer.renderer.isVisible = false
-                activeSpeakerRenderer.logo.isVisible = true
-            } else {
-                binding.activeSpeakerRenderer.renderer.isVisible = true
-                binding.activeSpeakerRenderer.logo.isVisible = false
-                videoTrack.addSink(binding.activeSpeakerRenderer.renderer)
-            }
-        }
-    }
-
-    private fun switchButton(button: ImageButton, pending: Boolean, enabled: Boolean) {
-        if (pending) {
-            button.isEnabled = false
-            setButtonBackgroundColor(button, R.color.loading_button)
-        } else {
-            if (enabled) setButtonBackgroundColor(
-                button,
-                R.color.enabled_button
-            ) else setButtonBackgroundColor(button, R.color.disabled_button)
-            button.isEnabled = true
+            viewModel.updateParticipants(uiVideos)
+            binding.activeStreamRenderer.renderer.clear()
         }
     }
 
     private fun setButtonBackgroundColor(button: ImageButton, colorRes: Int) {
         val background = button.background as GradientDrawable
-        background.setColor(resources.getColor(colorRes))
+        background.setColor(ContextCompat.getColor(button.context, colorRes))
     }
 
-    override fun onStop() {
-        super.onStop()
-        binding.localRenderer.renderer.release()
-        binding.activeSpeakerRenderer.renderer.release()
+    private fun showControls(){
+        binding.buttonsContainer.visibility = View.VISIBLE
+        binding.buttonsContainer.alpha = 0.0f
+
+        binding.buttonsContainer.animate()
+            .translationY(0f)
+            .alpha(1.0f)
+            .setListener(null)
+    }
+
+
+    private fun playChat(){
+        binding.buttonsContainer.visibility = View.VISIBLE
+        binding.buttonsContainer.alpha = 0.0f
+        binding.hangUp.visibility = View.INVISIBLE
+        binding.buttonsContainer.animate()
+            .translationY(0f)
+            .alpha(1.0f)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    binding.buttonsContainer.animate()
+                        .translationY(binding.buttonsContainer.height.toFloat())
+                        .alpha(0.0f)
+                        .setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                binding.hangUp.visibility = View.VISIBLE
+                                binding.buttonsContainer.visibility = View.GONE
+                            }
+                        })
+                }
+            })
+    }
+
+
+
+    private fun hideControls(){
+        binding.buttonsContainer.animate()
+            .translationY(binding.buttonsContainer.height.toFloat())
+            .alpha(0.0f)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
+                    binding.buttonsContainer.visibility = View.GONE
+                }
+            })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ScreenMeet.registerEventListener(eventListener)
+        loadState()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        ScreenMeet.unregisterEventListener(eventListener)
+        participantsAdapter.dispose(binding.participantsRecycler)
+        participantsAdapter.submitList(listOf())
+        binding.activeStreamRenderer.renderer.clear()
+    }
+
+    private val eventListener: SessionEventListener = object : SessionEventListener {
+        override fun onParticipantJoined(participant: Participant) {
+            loadState()
+        }
+
+        override fun onParticipantLeft(participant: Participant) {
+            loadState()
+        }
+
+        override fun onLocalVideoCreated(source: ScreenMeet.VideoSource, video: VideoElement) {
+            loadState()
+        }
+
+        override fun onLocalVideoStopped(source: ScreenMeet.VideoSource) {
+            loadState()
+        }
+
+        override fun onLocalAudioCreated() {
+            loadState()
+        }
+
+        override fun onLocalAudioStopped() {
+            loadState()
+        }
+
+        override fun onParticipantAudioCreated(participant: Participant) {
+            loadState()
+        }
+
+        override fun onParticipantAudioStopped(participant: Participant) {
+            loadState()
+        }
+
+        override fun onParticipantVideoCreated(participant: Participant, video: VideoElement) {
+            loadState()
+        }
+
+        override fun onParticipantVideoStopped(
+            participant: Participant,
+            source: ScreenMeet.VideoSource
+        ) {
+            loadState()
+        }
+
+        override fun onConnectionStateChanged(newState: ScreenMeet.ConnectionState) {
+            when (newState) {
+                ScreenMeet.ConnectionState.Connected -> loadState()
+                ScreenMeet.ConnectionState.Reconnecting -> viewModel.pinVideo(null)
+                else -> {}
+            }
+        }
+
+        override fun onActiveSpeakerChanged(participant: Participant, video: VideoElement) {
+            super.onActiveSpeakerChanged(participant, video)
+            viewModel.pinVideo(video)
+        }
+
+        override fun onChatMessage(chatMessage: ChatMessage) {
+            viewModel.receivedMessage()
+        }
     }
 }

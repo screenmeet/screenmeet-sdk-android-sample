@@ -1,9 +1,10 @@
-package com.screenmeet.live.feature.chat
+package com.screenmeet.live.feature.call.chat
 
 import android.content.res.ColorStateList
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -33,21 +34,29 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.ViewHolder>(ChatMessage
             binding.messageText.text = chatMessage.message
             binding.senderName.text = chatMessage.from.name
             val res = binding.root.context.resources
+            var color: Int
+            val gravity: Int
+
             if (chatMessage.isOwn) {
-                val color = res.getColor(R.color.grey_300)
-                binding.messageLayout.backgroundTintList = ColorStateList.valueOf(color)
-                binding.container.gravity = Gravity.END
+                gravity = Gravity.END
+                color = res.getColor(R.color.enabled_button, null)
             } else {
-                binding.container.gravity = Gravity.START
-                val color = res.getColor(R.color.colorAccent)
-                binding.messageLayout.backgroundTintList = ColorStateList.valueOf(color)
+                gravity = Gravity.START
+                color = res.getColor(R.color.dark_grey, null)
             }
+
+            if(chatMessage.status == ChatMessage.Status.IN_TRANSFER){
+                color = ColorUtils.setAlphaComponent(color, 100)
+            }
+
+            binding.messageLayout.backgroundTintList = ColorStateList.valueOf(color)
+            binding.container.gravity = gravity
         }
     }
 
     internal class ChatMessageComparator : DiffUtil.ItemCallback<ChatMessage>() {
         override fun areItemsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem.id == newItem.id || oldItem.transferId == newItem.transferId
         }
 
         override fun areContentsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {

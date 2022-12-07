@@ -16,9 +16,8 @@ class SupportApplication : Application() {
         instance = this
 
         // TODO Provide your API token below
-        val configuration = ScreenMeet.Configuration("41a6b472ef")
-        // val configuration = ScreenMeet.Configuration(BuildConfig.SM_API_KEY)
-        configuration.logLevel(ScreenMeet.Configuration.LogLevel.VERBOSE)
+        val configuration = ScreenMeet.Configuration(BuildConfig.SM_API_KEY)
+        configuration.logLevel(ScreenMeet.Configuration.LogLevel.DEBUG)
         ScreenMeet.init(this, configuration)
         registerActivityLifecycleCallbacks(ScreenMeet.activityLifecycleCallback())
     }

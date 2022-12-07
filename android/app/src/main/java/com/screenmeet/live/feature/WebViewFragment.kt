@@ -9,6 +9,7 @@ import com.screenmeet.live.databinding.FragmentWebviewConfidentialityBinding
 import com.screenmeet.live.util.viewBinding
 import com.screenmeet.sdk.ScreenMeet
 import dagger.hilt.android.AndroidEntryPoint
+import dev.chrisbanes.insetter.applyInsetter
 
 @AndroidEntryPoint
 class WebViewFragment : Fragment(R.layout.fragment_webview_confidentiality) {
@@ -19,8 +20,8 @@ class WebViewFragment : Fragment(R.layout.fragment_webview_confidentiality) {
         super.onViewCreated(view, savedInstanceState)
 
         binding.webView.apply {
+            applyInsetter { type(statusBars = true) { margin() } }
             ScreenMeet.setConfidential(this, true)
-
             settings.setSupportZoom(true)
             settings.builtInZoomControls = true
             settings.javaScriptEnabled = true

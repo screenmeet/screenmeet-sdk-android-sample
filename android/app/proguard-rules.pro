@@ -24,3 +24,7 @@
 -keep class org.mediasoup.** { *; }
 -dontwarn org.webrtc.**
 -keepattributes InnerClasses
+-dontwarn com.google.android.gms.**
+-keepclasseswithmembers class com.camerakit.preview.CameraSurfaceView {
+    native <methods>;
+}
