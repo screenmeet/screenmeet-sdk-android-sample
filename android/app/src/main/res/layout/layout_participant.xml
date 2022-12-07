@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="0dp"
-    android:background="@android:color/black"
-    android:id="@+id/layout">
+    android:background="@android:color/black">
 
     <org.webrtc.SurfaceViewRenderer
         android:id="@+id/renderer"
@@ -20,8 +19,8 @@
         android:id="@+id/nameTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/marginStart"
         android:layout_marginRight="@dimen/marginStart"
+        android:layout_marginBottom="@dimen/marginStart"
         android:text="TextView"
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"

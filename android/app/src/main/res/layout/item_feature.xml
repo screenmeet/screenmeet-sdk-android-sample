@@ -9,12 +9,12 @@
         android:id="@+id/featureTv"
         android:layout_width="@dimen/feature_item_size"
         android:layout_height="@dimen/feature_item_size"
-        android:gravity="center"
         android:layout_gravity="center"
-        android:textAlignment="center"
-        android:padding="@dimen/marginSmall"
-        android:fontFamily="sans-serif"
-        android:textColor="@color/white"
         android:background="@drawable/background_rounded_feature"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:padding="@dimen/marginSmall"
+        android:textAlignment="center"
+        android:textColor="@color/white"
         android:textSize="14sp" />
 </LinearLayout>

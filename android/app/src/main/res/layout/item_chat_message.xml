@@ -12,17 +12,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/circle"
-        android:padding="@dimen/marginBottom"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="@dimen/marginBottom">
 
-            <TextView
-                android:id="@+id/messageText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:fontFamily="sans-serif"
-                android:textColor="@android:color/white"
-                tools:text="Message text"/>
+        <TextView
+            android:id="@+id/messageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            tools:text="Message text" />
 
     </LinearLayout>
 
@@ -30,11 +30,11 @@
         android:id="@+id/senderName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
-        android:fontFamily="sans-serif"
-        android:layout_marginTop="@dimen/message_margin"
         android:layout_marginStart="@dimen/marginBottom"
+        android:layout_marginTop="@dimen/message_margin"
         android:layout_marginEnd="@dimen/marginBottom"
-        tools:text="Message text"/>
+        android:fontFamily="sans-serif"
+        android:textSize="11sp"
+        tools:text="Message text" />
 
 </LinearLayout>

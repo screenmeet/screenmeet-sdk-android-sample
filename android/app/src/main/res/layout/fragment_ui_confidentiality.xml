@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fillViewport="true">
 
     <LinearLayout
         android:id="@+id/obfuscateContainer"
-        android:orientation="vertical"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_width="match_parent"/>
+        android:orientation="vertical" />
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:layout_margin="@dimen/marginMedium">
+        android:layout_margin="@dimen/marginMedium"
+        android:orientation="vertical">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/deobfuscate"
             android:layout_width="@dimen/button_size"
             android:layout_height="@dimen/button_size"
-            app:fabCustomSize="@dimen/button_size"
             android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="@dimen/button_padding"
+            android:foregroundGravity="center"
             android:src="@drawable/ic_remove"
             app:backgroundTint="@color/bright_red"
-            android:foregroundGravity="center"
-            android:layout_marginBottom="@dimen/button_padding"/>
+            app:fabCustomSize="@dimen/button_size" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/obfuscateNew"
             android:layout_width="@dimen/fab_size"
             android:layout_height="@dimen/fab_size"
-            app:fabCustomSize="@dimen/fab_size"
-            android:src="@drawable/ic_add"
-            app:backgroundTint="@color/green"
             android:layout_marginStart="@dimen/button_padding"
             android:layout_marginEnd="@dimen/button_padding"
-            android:layout_marginBottom="@dimen/button_padding" />
+            android:layout_marginBottom="@dimen/button_padding"
+            android:src="@drawable/ic_add"
+            app:backgroundTint="@color/green"
+            app:fabCustomSize="@dimen/fab_size" />
     </LinearLayout>
 
 </FrameLayout>
