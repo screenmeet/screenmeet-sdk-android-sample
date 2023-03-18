@@ -4,6 +4,7 @@ phases:
   install:
     runtime-versions:
       nodejs: 16
+      java: corretto17
     commands:
       - cd android
       - mkdir cmdline-tools
@@ -20,11 +21,11 @@ phases:
     commands:
       - |
         if [ "$ENVIRONMENT" = "ci" ]; then
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
         fi
       - |
         if [ "$ENVIRONMENT" = "qa" ]; then
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
         fi
       - |
         if [ "$ENVIRONMENT" = "prod" ]; then
@@ -35,13 +36,13 @@ phases:
       - appcenter login --token $APP_CENTER_TOKEN
       - |
         if [ "$ENVIRONMENT" = "ci" ]; then
-          appcenter distribute release -f ${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/debug/app-debug.apk -g Test --app eugene-hockey-8awm/ScreenMeet-Live-CI
+          appcenter distribute release -f ${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/release/app-release.apk --silent -g QA --app eugene-hockey-8awm/ScreenMeet-Live-CI
         fi
       - |
         if [ "$ENVIRONMENT" = "qa" ]; then
-          appcenter distribute release -f${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/debug/app-debug.apk -g Test --app eugene-hockey-8awm/LIVE-SDK-Sample-APP
+          appcenter distribute release -f ${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/release/app-release.apk --silent -g QA --app eugene-hockey-8awm/LIVE-SDK-Sample-APP
         fi
       - |
         if [ "$ENVIRONMENT" = "prod" ]; then
-          appcenter distribute release -f ${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/release/app-release.apk -g Test --app eugene-hockey-8awm/ScreenMeet-Live-PROD
+          appcenter distribute release -f ${CODEBUILD_SRC_DIR}/android/app/build/outputs/apk/release/app-release.apk --silent -g QA --app eugene-hockey-8awm/ScreenMeet-Live-PROD
         fi

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "192896347210",
+    "project_id": "screenmeet-live",
+    "storage_bucket": "screenmeet-live.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192896347210:android:1da200edb12605621dcab3",
+        "android_client_info": {
+          "package_name": "com.screenmeet.live"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "192896347210-gu11usb1cgus9kvs26pd1atahkl8h6b4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjqNHa3g0j4Yx0HTzP3foPrYPSu2CtApU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "192896347210-gu11usb1cgus9kvs26pd1atahkl8h6b4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

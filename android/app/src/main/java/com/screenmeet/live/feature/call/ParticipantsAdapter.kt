@@ -1,5 +1,6 @@
 package com.screenmeet.live.feature.call
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.LayoutParticipantBinding
+import com.screenmeet.live.util.DoubleTapListener
 import com.screenmeet.sdk.VideoElement
 import kotlinx.coroutines.CoroutineScope
 import org.webrtc.EglBase
@@ -47,7 +49,7 @@ class ParticipantsAdapter(
             viewHolder?.dispose()
         }
     }
-
+    @SuppressLint("ClickableViewAccessibility")
     class ViewHolder(
         val binding: LayoutParticipantBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -69,6 +71,10 @@ class ParticipantsAdapter(
                 pinButton.setOnClickListener {
                     onClick(video)
                 }
+                val doubleTapListener = DoubleTapListener(root.context){
+                    onClick(video)
+                }
+                root.setOnTouchListener(doubleTapListener)
 
                 if (video.isAudioSharing) {
                     microButton.setImageResource(R.drawable.mic)

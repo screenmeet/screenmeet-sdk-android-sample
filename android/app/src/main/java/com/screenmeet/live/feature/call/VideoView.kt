@@ -2,11 +2,15 @@ package com.screenmeet.live.feature.call
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.webrtc.*
+import org.webrtc.EglBase
+import org.webrtc.RendererCommon
+import org.webrtc.SurfaceViewRenderer
+import org.webrtc.VideoFrame
+import org.webrtc.VideoSink
+import org.webrtc.VideoTrack
 
 typealias onFramesStuck = (Boolean) -> Unit
 
@@ -42,7 +46,6 @@ class VideoView: SurfaceViewRenderer {
     }
 
     fun render(track: VideoTrack?){
-        Log.d("VideoTrackRender", "render: $track")
         if (track == null){
             clear()
             return

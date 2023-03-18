@@ -1,15 +1,21 @@
 package com.screenmeet.live.overlay
 
 import android.content.Context
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
+import com.screenmeet.live.MainActivity
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.OverlayWidgetBinding
+import com.screenmeet.live.util.DoubleTapListener
 import com.screenmeet.sdk.ScreenMeet.Companion.eglContext
 import com.screenmeet.sdk.VideoElement
 import org.webrtc.RendererCommon
@@ -31,10 +37,9 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
     private var binding: OverlayWidgetBinding? = null
 
     override fun buildOverlay(context: Context): View {
-        val inflater = LayoutInflater.from(context)
+        val ctx = ContextThemeWrapper(context, R.style.AppTheme)
+        val inflater = LayoutInflater.from(ctx)
         binding = OverlayWidgetBinding.inflate(inflater)
-
-
 
         overlayWidth = WindowManager.LayoutParams.WRAP_CONTENT
         overlayHeight = WindowManager.LayoutParams.WRAP_CONTENT
@@ -88,7 +93,15 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
 
         return binding!!.root.apply {
             setPadding(widgetInnerPadding)
+            val doubleTapListener = DoubleTapListener(context){
+                val contextNew = this.context
+                val intent = Intent(contextNew, MainActivity::class.java)
+                intent.addFlags(FLAG_ACTIVITY_SINGLE_TOP)
+                intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+                contextNew.startActivity(intent)
+            }
             setOnTouchListener { v, event ->
+                doubleTapListener.onTouch(v, event)
                 v.performClick()
                 processTouch(event)
                 return@setOnTouchListener true
@@ -124,6 +137,7 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
             renderer.render(videoTrack)
             renderer.isVisible = hasTrack
             logo.isVisible = !hasTrack
+            root.visibility = View.VISIBLE
         }
     }
 

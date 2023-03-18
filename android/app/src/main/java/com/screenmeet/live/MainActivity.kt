@@ -2,34 +2,41 @@ package com.screenmeet.live
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
 import com.screenmeet.live.SupportApplication.Companion.startListeningForeground
 import com.screenmeet.live.SupportApplication.Companion.stopListeningForeground
+import com.screenmeet.live.SupportApplication.Companion.widgetManager
 import com.screenmeet.live.databinding.ActivityMainBinding
-import com.screenmeet.live.overlay.WidgetManager
 import com.screenmeet.live.util.LogsDebugListener
 import com.screenmeet.live.util.NavigationDispatcher
-import com.screenmeet.sdk.*
+import com.screenmeet.sdk.Entitlement
+import com.screenmeet.sdk.Feature
+import com.screenmeet.sdk.Participant
+import com.screenmeet.sdk.ScreenMeet
+import com.screenmeet.sdk.SessionEventListener
+import com.screenmeet.sdk.VideoElement
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+const val TRANSLUCENT_STATUS = 67108864
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
-
-    private var widgetManager: WidgetManager? = null
 
     private val logsListener = LogsDebugListener()
 
@@ -56,16 +63,22 @@ class MainActivity : AppCompatActivity() {
         ScreenMeet.registerEventListener(eventListener)
         ScreenMeet.registerEventListener(logsListener)
 
-        lifecycleScope.launchWhenResumed { observeNavigationCommands() }
-        binding.videoCall.setOnClickListener {
-            navigationDispatcher.emit { it.navigate(R.id.goVideoCall) }
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                observeNavigationCommands()
+            }
         }
-        widgetManager = WidgetManager(this)
     }
 
     override fun onResume() {
         super.onResume()
         updateHeader()
+        displayWidgetIfNeeded()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        displayWidgetIfNeeded(true)
     }
 
     private fun applyInsets() {
@@ -73,18 +86,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyEdgeToEdge() {
-        @Suppress("Deprecation")
-        setWindowFlag(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false)
-        window.statusBarColor = Color.TRANSPARENT
         WindowCompat.setDecorFitsSystemWindows(window, false)
-    }
-
-    private fun setWindowFlag(bits: Int, on: Boolean) {
-        val win = window
-        val winParams = win.attributes
-        if (on) winParams.flags = winParams.flags or bits
-        else winParams.flags = winParams.flags and bits.inv()
-        win.attributes = winParams
+        window.clearFlags(TRANSLUCENT_STATUS)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
     }
 
     private fun initNavigation() {
@@ -94,8 +99,7 @@ class MainActivity : AppCompatActivity() {
             navHost.navController.graph = navGraph
             navController = navHost.navController
 
-            navHost.navController.addOnDestinationChangedListener { _, destination, _ ->
-                binding.videoCall.isVisible = destination.id == R.id.fragmentMain
+            navHost.navController.addOnDestinationChangedListener { _, _, _ ->
                 displayWidgetIfNeeded()
             }
         }
@@ -171,19 +175,22 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun displayWidgetIfNeeded() {
+    private fun displayWidgetIfNeeded(background: Boolean = false) {
+        val widgetManager = SupportApplication.widgetManager
         val currentDestinationId = navController.currentDestination?.id
         val shouldNotShow = currentDestinationId == R.id.fragmentConnect
-                || currentDestinationId == R.id.fragmentVideoCall
+                || currentDestinationId ==R.id.fragmentVideoCall
                 || currentDestinationId == R.id.fragmentChat
                 || currentDestinationId == R.id.fragmentCallMore
                 || currentDestinationId == R.id.fragmentPeople
-        if(!shouldNotShow){
-            val activeSpeaker = ScreenMeet.currentActiveSpeaker()
+        if(!shouldNotShow || background){
+            val activeSpeaker = ScreenMeet.currentActiveSpeaker() ?: run {
+                ScreenMeet.uiVideos(false).firstOrNull { it.track != null }
+            }
             if (activeSpeaker != null) {
-                widgetManager?.showFloatingWidget(this@MainActivity, activeSpeaker)
-            } else widgetManager?.hideFloatingWidget()
-        } else widgetManager?.hideFloatingWidget()
+                widgetManager.showFloatingWidget(this@MainActivity, activeSpeaker)
+            } else widgetManager.hideFloatingWidget()
+        } else widgetManager.hideFloatingWidget()
     }
 
     private fun updateHeader() {
@@ -202,6 +209,7 @@ class MainActivity : AppCompatActivity() {
             }
             is ScreenMeet.ConnectionState.Disconnected  -> {
                 stopListeningForeground()
+                widgetManager.hideFloatingWidget()
                 binding.statusView.isVisible = false
                 binding.stopRemoteAssist.isVisible = false
                 navigationDispatcher.emit {
@@ -211,8 +219,5 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-        val participantsCount = ScreenMeet.participants().size
-        binding.participantsTv.text = getString(R.string.session_participants, participantsCount)
     }
 }
