@@ -2,7 +2,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTint="@color/dark_grey"
     android:background="@drawable/background_rounded_view">
@@ -12,7 +12,35 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="@dimen/marginSmallest"
+        android:layout_gravity="center"
         android:visibility="gone"/>
+
+    <com.otaliastudios.zoom.ZoomLayout
+        android:id="@+id/zoomContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:transformation="centerInside"
+        app:alignment="center"
+        app:overScrollHorizontal="true"
+        app:overScrollVertical="false"
+        app:overPinchable="false"
+        app:zoomEnabled="true"
+        app:scrollEnabled="true"
+        app:oneFingerScrollEnabled="true"
+        app:minZoom="0.5"
+        app:maxZoom="0.98"
+        app:minZoomType="zoom"
+        app:maxZoomType="zoom"
+        app:animationDuration="280"
+        app:hasClickableChildren="true"
+        android:visibility="gone">
+
+        <com.screenmeet.live.feature.call.VideoView
+            android:id="@+id/zoomRenderer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </com.otaliastudios.zoom.ZoomLayout>
 
     <ImageView
         android:id="@+id/pinButton"

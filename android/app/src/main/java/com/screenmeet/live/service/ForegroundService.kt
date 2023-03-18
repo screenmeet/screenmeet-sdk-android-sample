@@ -1,11 +1,11 @@
 package com.screenmeet.live.service
 
 import android.app.*
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.*
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat.IMPORTANCE_HIGH
 import com.screenmeet.live.MainActivity
 import com.screenmeet.live.R
 
@@ -45,14 +45,20 @@ class ForegroundService : Service() {
         configurationChanged = true
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        stopForeground(true)
+    @Suppress("DEPRECATION")
+    override fun onBind(intent: Intent): IBinder {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else stopForeground(true)
         configurationChanged = false
         return binder
     }
 
+    @Suppress("DEPRECATION")
     override fun onRebind(intent: Intent) {
-        stopForeground(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else stopForeground(true)
         configurationChanged = false
         super.onRebind(intent)
     }
@@ -76,12 +82,13 @@ class ForegroundService : Service() {
                 this, 0,
                 Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE
             )
+            val resources = applicationContext.resources
             val builder = NotificationCompat.Builder(this, ANDROID_CHANNEL_ID)
                 .setContentIntent(activityPendingIntent)
-                .setContentText("Live session ongoing...")
-                .setContentTitle("ScreenMeet Sample Application")
+                .setContentText(resources.getString(R.string.foreground_title))
+                .setContentTitle(resources.getString(R.string.app_name))
                 .setOngoing(true)
-                .setPriority(Notification.PRIORITY_HIGH)
+                .setPriority(IMPORTANCE_HIGH)
                 .setSmallIcon(R.drawable.ic_support_agent)
                 .setWhen(System.currentTimeMillis())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -90,23 +97,10 @@ class ForegroundService : Service() {
             return builder.build()
         }
 
+    @Suppress("unused")
     inner class LocalBinder : Binder() {
         val service: ForegroundService
             get() = this@ForegroundService
-    }
-
-    fun serviceIsRunningInForeground(context: Context): Boolean {
-        val manager = context.getSystemService(
-            ACTIVITY_SERVICE
-        ) as ActivityManager
-        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
-            if (javaClass.name == service.service.className) {
-                if (service.foreground) {
-                    return true
-                }
-            }
-        }
-        return false
     }
 
     companion object {

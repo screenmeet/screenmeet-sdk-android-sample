@@ -16,8 +16,8 @@ import com.screenmeet.live.util.viewBinding
 import com.screenmeet.sdk.CompletionError
 import com.screenmeet.sdk.CompletionHandler
 import com.screenmeet.sdk.ScreenMeet
+import com.screenmeet.sdk.ScreenMeet.ConnectionState.Connected
 import com.screenmeet.sdk.SessionEventListener
-import com.screenmeet.sdk.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
 import javax.inject.Inject
@@ -34,8 +34,8 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
         super.onViewCreated(view, savedInstanceState)
         applyInsets()
 
-        if (ScreenMeet.connectionState() is ScreenMeet.ConnectionState.Connected) {
-            navigationDispatcher.emit { it.navigate(R.id.goMain) }
+        if (ScreenMeet.connectionState() is Connected) {
+            navigationDispatcher.emit { it.navigate(R.id.goVideoCall) }
         } else {
             binding.otpView.setOtpCompletionListener { code -> connect(code) }
         }
@@ -43,22 +43,27 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
 
     private fun connect(code: String) {
         loading(true)
-        ScreenMeet.connect(
-            code,
-            object : CompletionHandler {
-                override fun onSuccess() {
-                    connectionSuccess()
-                }
-
-                override fun onFailure(error: CompletionError) {
-                    connectionError(error)
-                }
+        val completion = object : CompletionHandler {
+            override fun onSuccess() {
+                connectionSuccess()
             }
+
+            override fun onFailure(error: CompletionError) {
+                connectionError(error)
+            }
+        }
+
+        ScreenMeet.connect(
+            code = code,
+            localUserName = "John Doe",
+            completion = completion
         )
     }
 
     private fun loading(show: Boolean) {
-        if (show) binding.resultTv.isVisible = false
+        if (show) {
+            binding.resultTv.isVisible = false
+        }
         binding.loadingIndicator.isVisible = show
         binding.otpView.isEnabled = !show
         binding.hintTv.isVisible = !show

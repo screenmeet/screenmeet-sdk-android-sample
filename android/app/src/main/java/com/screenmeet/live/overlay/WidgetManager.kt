@@ -7,6 +7,7 @@ import com.screenmeet.sdk.VideoElement
 class WidgetManager(val context: Context) {
 
     private var videoOverlay: VideoOverlay? = null
+    private var overlayPermissionDenied: Boolean = false
     private val configurationWatcher = ConfigurationWatcher(context)
 
     init {
@@ -19,9 +20,12 @@ class WidgetManager(val context: Context) {
         if (PermissionProvider.canDrawOverlay(context)) {
             doShowFloatingWidget(configurationWatcher.screenConfig, videoElement)
         } else {
+            if (overlayPermissionDenied) return
             PermissionProvider.requestOverlay(context, activity.activityResultRegistry) { granted ->
                 if (granted) {
                     doShowFloatingWidget(configurationWatcher.screenConfig, videoElement)
+                } else {
+                    overlayPermissionDenied = true
                 }
             }
         }

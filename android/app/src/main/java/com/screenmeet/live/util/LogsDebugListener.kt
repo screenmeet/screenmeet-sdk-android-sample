@@ -1,7 +1,12 @@
 package com.screenmeet.live.util
 
 import android.util.Log
-import com.screenmeet.sdk.*
+import com.screenmeet.sdk.Entitlement
+import com.screenmeet.sdk.Feature
+import com.screenmeet.sdk.Participant
+import com.screenmeet.sdk.ScreenMeet
+import com.screenmeet.sdk.SessionEventListener
+import com.screenmeet.sdk.VideoElement
 import com.screenmeet.sdk.domain.entity.ChatMessage
 
 class LogsDebugListener: SessionEventListener {

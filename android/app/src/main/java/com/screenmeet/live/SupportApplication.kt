@@ -4,6 +4,9 @@ import android.app.Application
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
+import com.screenmeet.live.overlay.WidgetManager
 import com.screenmeet.live.service.ForegroundServiceConnection
 import com.screenmeet.sdk.ScreenMeet
 import dagger.hilt.android.HiltAndroidApp
@@ -14,7 +17,7 @@ class SupportApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-
+        Firebase.crashlytics.setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
         // TODO Provide your API token below
         val configuration = ScreenMeet.Configuration(BuildConfig.SM_API_KEY)
         configuration.logLevel(ScreenMeet.Configuration.LogLevel.DEBUG)
@@ -28,15 +31,17 @@ class SupportApplication : Application() {
         var instance: SupportApplication? = null
         private val serviceConnection = ForegroundServiceConnection()
 
+        val widgetManager: WidgetManager by lazy { WidgetManager(instance!!) }
+
         private val observer: DefaultLifecycleObserver = object : DefaultLifecycleObserver {
 
-            override fun onStart(owner: LifecycleOwner) {
-                super.onStart(owner)
+            override fun onResume(owner: LifecycleOwner) {
+                super.onResume(owner)
                 instance?.let { serviceConnection.bind(it) }
             }
 
-            override fun onStop(owner: LifecycleOwner) {
-                super.onStop(owner)
+            override fun onPause(owner: LifecycleOwner) {
+                super.onPause(owner)
                 instance?.let { serviceConnection.unbind(it) }
             }
         }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.screenmeet.live.R
 import com.screenmeet.live.util.NavigationDispatcher
 import com.screenmeet.sdk.VideoElement
+import com.screenmeet.sdk.domain.entity.ChatMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -53,8 +54,9 @@ class CallViewModel @Inject constructor(
         _activeSpeaker.value = uiVideo?.id
     }
 
-    fun receivedMessage(){
+    fun receivedMessage(chatMessage: ChatMessage){
         viewModelScope.launch {
+            if(chatMessage.isOwn) return@launch
             eventChannel.send(Event.NewMessage)
             _hasUnread.value = true
         }

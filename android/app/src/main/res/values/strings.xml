@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">ScreenMeet Live</string>
+    <string name="foreground_title">"Live session ongoing…"</string>
     <string name="me">Me</string>
     <string name="captcha_not_robot">I\'m not a robot</string>
     <string name="waiting_for_knock">Waiting for permission to join</string>
@@ -21,4 +22,8 @@
     <string name="people">People</string>
     <string name="view_confidentiality">View Confidentiality Demo</string>
     <string name="web_confidentiality">Web Content Confidentiality Demo</string>
+
+    <string name="allow">Allow</string>
+    <string name="deny">Deny</string>
+    <string name="notifications_rationale">Notifications needed for ScreenMeet to stay connected while app in background</string>
 </resources>

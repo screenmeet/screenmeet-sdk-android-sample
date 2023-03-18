@@ -16,7 +16,8 @@ import com.screenmeet.live.databinding.FragmentUiConfidentialityBinding
 import com.screenmeet.live.util.viewBinding
 import com.screenmeet.sdk.ScreenMeet
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
+import dev.chrisbanes.insetter.applyInsetter
+import java.util.Random
 
 @AndroidEntryPoint
 class ConfidentialityFragment : Fragment(R.layout.fragment_ui_confidentiality) {
@@ -29,8 +30,10 @@ class ConfidentialityFragment : Fragment(R.layout.fragment_ui_confidentiality) {
         super.onViewCreated(view, savedInstanceState)
 
         binding.obfuscateNew.setOnClickListener {
-            val obfuscatedView =
-                constructConfidentialView(binding.root.context, viewsToObfuscate.size)
+            val obfuscatedView = constructConfidentialView(
+                binding.root.context,
+                viewsToObfuscate.size
+            )
 
             binding.obfuscateContainer.addView(
                 obfuscatedView,
@@ -43,11 +46,25 @@ class ConfidentialityFragment : Fragment(R.layout.fragment_ui_confidentiality) {
             ScreenMeet.setConfidential(obfuscatedView.findViewWithTag("tv"))
         }
         binding.deobfuscate.setOnClickListener {
-            if (viewsToObfuscate.isNotEmpty()) {
-                val obfuscatedView = viewsToObfuscate[viewsToObfuscate.size - 1]
+            viewsToObfuscate.lastOrNull()?.let { obfuscatedView ->
                 ScreenMeet.unsetConfidential(obfuscatedView.findViewWithTag("tv"))
                 viewsToObfuscate.remove(obfuscatedView)
                 binding.obfuscateContainer.removeView(obfuscatedView)
+            }
+        }
+
+        applyInsets()
+    }
+
+    private fun applyInsets() {
+        binding.obfuscateContainer.applyInsetter {
+            type(statusBars = true, navigationBars = true){
+                padding()
+            }
+        }
+        binding.controlContainer.applyInsetter {
+            type(navigationBars = true){
+                margin()
             }
         }
     }
