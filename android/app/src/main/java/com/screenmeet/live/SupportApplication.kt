@@ -25,15 +25,19 @@ class SupportApplication : Application() {
         registerActivityLifecycleCallbacks(ScreenMeet.activityLifecycleCallback())
     }
 
+    @Suppress("ktlint:experimental:property-naming")
     companion object {
 
         @JvmField
         var instance: SupportApplication? = null
+
+        var inBackground = false
+
+        val widgetManager by lazy { WidgetManager(instance!!) }
+
         private val serviceConnection = ForegroundServiceConnection()
 
-        val widgetManager: WidgetManager by lazy { WidgetManager(instance!!) }
-
-        private val observer: DefaultLifecycleObserver = object : DefaultLifecycleObserver {
+        private val observer = object : DefaultLifecycleObserver {
 
             override fun onResume(owner: LifecycleOwner) {
                 super.onResume(owner)
@@ -55,6 +59,7 @@ class SupportApplication : Application() {
 
         @JvmStatic
         fun stopListeningForeground() {
+            instance?.let { serviceConnection.bind(it) }
             ProcessLifecycleOwner
                 .get().lifecycle
                 .removeObserver(observer)

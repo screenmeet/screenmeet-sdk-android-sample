@@ -14,7 +14,7 @@ typealias ActionClick = (Participant) -> Unit
 
 class PeopleAdapter(
     private val clickListener: ActionClick
-): ListAdapter<Participant, PeopleAdapter.ViewHolder>(ParticipantComparator()) {
+) : ListAdapter<Participant, PeopleAdapter.ViewHolder>(ParticipantComparator()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context
@@ -33,9 +33,11 @@ class PeopleAdapter(
             binding.apply {
                 root.setOnClickListener { clickAction(participant) }
                 nameTv.text = participant.identity.name
-                val audioImage = if(participant.mediaState.isAudioSharing) {
+                val audioImage = if (participant.mediaState.isAudioSharing) {
                     R.drawable.mic
-                } else R.drawable.mic_off
+                } else {
+                    R.drawable.mic_off
+                }
                 audioIv.setImageResource(audioImage)
                 hostIv.isVisible = participant.identity.isHost
             }

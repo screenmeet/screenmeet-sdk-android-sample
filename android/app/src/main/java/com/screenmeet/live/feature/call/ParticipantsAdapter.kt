@@ -49,17 +49,13 @@ class ParticipantsAdapter(
             viewHolder?.dispose()
         }
     }
+
     @SuppressLint("ClickableViewAccessibility")
     class ViewHolder(
         val binding: LayoutParticipantBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(
-            scope: CoroutineScope,
-            video: VideoElement,
-            recyclerSize: Int,
-            onClick: PinClick
-        ) {
+        fun bind(scope: CoroutineScope, video: VideoElement, recyclerSize: Int, onClick: PinClick) {
             binding.apply {
                 val layoutParams = RecyclerView.LayoutParams(
                     recyclerSize / 2,
@@ -71,7 +67,7 @@ class ParticipantsAdapter(
                 pinButton.setOnClickListener {
                     onClick(video)
                 }
-                val doubleTapListener = DoubleTapListener(root.context){
+                val doubleTapListener = DoubleTapListener(root.context) {
                     onClick(video)
                 }
                 root.setOnTouchListener(doubleTapListener)
@@ -88,11 +84,12 @@ class ParticipantsAdapter(
                 }
 
                 val videoTrack = video.track
-                val hasTrack = videoTrack != null
                 renderer.render(videoTrack)
                 renderer.listenFramesStuck(scope) { stuck ->
                     binding.frameStuckSpinner.isVisible = stuck
                 }
+
+                val hasTrack = videoTrack != null
                 renderer.isVisible = hasTrack
                 logo.isVisible = !hasTrack
             }

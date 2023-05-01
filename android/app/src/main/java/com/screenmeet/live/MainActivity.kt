@@ -71,14 +71,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        SupportApplication.inBackground = false
         super.onResume()
         updateHeader()
         displayWidgetIfNeeded()
     }
 
     override fun onPause() {
+        SupportApplication.inBackground = true
         super.onPause()
-        displayWidgetIfNeeded(true)
+        displayWidgetIfNeeded()
     }
 
     private fun applyInsets() {
@@ -93,15 +95,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initNavigation() {
-        (supportFragmentManager.findFragmentById(R.id.fragmentHost) as NavHostFragment).also { navHost ->
-            val navInflater = navHost.navController.navInflater
-            val navGraph = navInflater.inflate(R.navigation.main_graph)
-            navHost.navController.graph = navGraph
-            navController = navHost.navController
+        val navHost = supportFragmentManager.findFragmentById(R.id.fragmentHost) as NavHostFragment
+        val navInflater = navHost.navController.navInflater
+        val navGraph = navInflater.inflate(R.navigation.main_graph)
+        navHost.navController.graph = navGraph
+        navController = navHost.navController
 
-            navHost.navController.addOnDestinationChangedListener { _, _, _ ->
-                displayWidgetIfNeeded()
-            }
+        navHost.navController.addOnDestinationChangedListener { _, _, _ ->
+            displayWidgetIfNeeded()
         }
     }
 
@@ -126,6 +127,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onParticipantLeft(participant: Participant) {
             updateHeader()
+            displayWidgetIfNeeded()
         }
 
         override fun onParticipantAudioCreated(participant: Participant) {
@@ -156,8 +158,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             when (feature.entitlement) {
-                Entitlement.LASER_POINTER -> binding.stopRemoteAssist.setImageResource(R.drawable.ic_pointer)
-                Entitlement.REMOTE_CONTROL -> binding.stopRemoteAssist.setImageResource(R.drawable.ic_remote_control)
+                Entitlement.LASER_POINTER -> binding.stopRemoteAssist.setImageResource(
+                    R.drawable.ic_pointer
+                )
+                Entitlement.REMOTE_CONTROL -> binding.stopRemoteAssist.setImageResource(
+                    R.drawable.ic_remote_control
+                )
             }
         }
 
@@ -175,22 +181,37 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun displayWidgetIfNeeded(background: Boolean = false) {
+    private fun displayWidgetIfNeeded() {
         val widgetManager = SupportApplication.widgetManager
+
         val currentDestinationId = navController.currentDestination?.id
-        val shouldNotShow = currentDestinationId == R.id.fragmentConnect
-                || currentDestinationId ==R.id.fragmentVideoCall
-                || currentDestinationId == R.id.fragmentChat
-                || currentDestinationId == R.id.fragmentCallMore
-                || currentDestinationId == R.id.fragmentPeople
-        if(!shouldNotShow || background){
-            val activeSpeaker = ScreenMeet.currentActiveSpeaker() ?: run {
-                ScreenMeet.uiVideos(false).firstOrNull { it.track != null }
+        val shouldHideWidget = currentDestinationId == R.id.fragmentConnect ||
+            currentDestinationId == R.id.fragmentVideoCall ||
+            currentDestinationId == R.id.fragmentChat ||
+            currentDestinationId == R.id.fragmentCallMore ||
+            currentDestinationId == R.id.fragmentPeople
+
+        if (!shouldHideWidget || SupportApplication.inBackground) {
+            var activeSpeaker = ScreenMeet.currentActiveSpeaker()
+            if (activeSpeaker?.track == null || isOwnScreenShare(activeSpeaker)) {
+                activeSpeaker = ScreenMeet.uiVideos(true).firstOrNull {
+                    it.track != null && !isOwnScreenShare(it)
+                }
             }
+
             if (activeSpeaker != null) {
                 widgetManager.showFloatingWidget(this@MainActivity, activeSpeaker)
-            } else widgetManager.hideFloatingWidget()
-        } else widgetManager.hideFloatingWidget()
+                return
+            }
+        }
+
+        widgetManager.hideFloatingWidget()
+    }
+
+    private fun isOwnScreenShare(videoElement: VideoElement): Boolean {
+        val localParticipant = ScreenMeet.localParticipant()
+        return videoElement.participantId == localParticipant.id &&
+            videoElement.sourceType == ScreenMeet.VideoSource.Screen
     }
 
     private fun updateHeader() {
@@ -207,13 +228,13 @@ class MainActivity : AppCompatActivity() {
                 binding.statusView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
                 binding.connectionTv.text = getString(R.string.session_connected)
             }
-            is ScreenMeet.ConnectionState.Disconnected  -> {
+            is ScreenMeet.ConnectionState.Disconnected -> {
                 stopListeningForeground()
                 widgetManager.hideFloatingWidget()
                 binding.statusView.isVisible = false
                 binding.stopRemoteAssist.isVisible = false
                 navigationDispatcher.emit {
-                    if(it.currentBackStackEntry?.destination?.id != R.id.fragmentConnect) {
+                    if (it.currentBackStackEntry?.destination?.id != R.id.fragmentConnect) {
                         it.navigate(R.id.goConnect)
                     }
                 }

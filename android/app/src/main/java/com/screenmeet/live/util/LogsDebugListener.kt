@@ -9,7 +9,7 @@ import com.screenmeet.sdk.SessionEventListener
 import com.screenmeet.sdk.VideoElement
 import com.screenmeet.sdk.domain.entity.ChatMessage
 
-class LogsDebugListener: SessionEventListener {
+class LogsDebugListener : SessionEventListener {
     override fun onParticipantJoined(participant: Participant) {
         Log.d("SessionEventDebug", "onParticipantJoined $participant")
     }
@@ -66,10 +66,7 @@ class LogsDebugListener: SessionEventListener {
         Log.d("SessionEventDebug", "onChatMessage $chatMessage")
     }
 
-    override fun onFeatureRequest(
-        feature: Feature,
-        decisionHandler: (granted: Boolean) -> Unit
-    ) {
+    override fun onFeatureRequest(feature: Feature, decisionHandler: (granted: Boolean) -> Unit) {
         Log.d("SessionEventDebug", "onFeatureRequest $feature")
     }
 

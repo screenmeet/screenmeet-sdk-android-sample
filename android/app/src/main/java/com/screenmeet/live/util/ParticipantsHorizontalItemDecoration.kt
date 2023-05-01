@@ -14,7 +14,7 @@ class ParticipantsHorizontalItemDecoration(private val spacing: Int) : ItemDecor
         state: RecyclerView.State
     ) {
         val position = parent.getChildAdapterPosition(view)
-        outRect.left = if(position == 0) spacing else 0
+        outRect.left = if (position == 0) spacing else 0
         outRect.right = spacing
         outRect.bottom = spacing
         outRect.top = spacing

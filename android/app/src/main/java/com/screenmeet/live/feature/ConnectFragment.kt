@@ -74,14 +74,14 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
         binding.hintTv.isVisible = false
         binding.resultTv.isVisible = true
         binding.resultTv.setTextColor(Color.WHITE)
-        binding.resultTv.text = "Connected!"
+        binding.resultTv.text = getString(R.string.connected)
         navigationDispatcher.emit { it.navigate(R.id.goVideoCall) }
     }
 
     private fun connectionError(error: CompletionError) {
         when (error) {
             is CompletionError.RequestedCaptcha -> showCaptchaDialog(error.challenge)
-            is CompletionError.WaitingForKnock  -> {
+            is CompletionError.WaitingForKnock -> {
                 showError(getString(R.string.waiting_for_knock), false)
             }
             is CompletionError.KnockDenied -> {
@@ -122,7 +122,7 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
     }
 
     private fun showError(message: String, clear: Boolean = true) {
-        if(clear) {
+        if (clear) {
             binding.otpView.editableText.clear()
         }
         binding.resultTv.isVisible = true
@@ -144,13 +144,12 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
     private val sessionEventListener = object : SessionEventListener {
 
         override fun onConnectionStateChanged(newState: ScreenMeet.ConnectionState) {
-            if(newState is ScreenMeet.ConnectionState.Disconnected){
+            if (newState is ScreenMeet.ConnectionState.Disconnected) {
                 loading(false)
                 if (newState.reason != ScreenMeet.ConnectionState.Disconnected.Reason.KnockDenied) {
                     showError(getString(R.string.connection_error))
                 }
             }
         }
-
     }
 }

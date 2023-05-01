@@ -36,40 +36,42 @@ class CallViewModel @Inject constructor(
     private val _participants = MutableStateFlow(listOf<VideoElement>())
     val participants = _participants.asStateFlow()
 
-    fun controlsVisible(visible: Boolean){
+    fun controlsVisible(visible: Boolean) {
         viewModelScope.launch {
-            if (visible){
+            if (visible) {
                 _showControls.value = true
                 delay(controlsDisplayTime)
                 _showControls.value = false
-            } else _showControls.value = false
+            } else {
+                _showControls.value = false
+            }
         }
     }
 
-    fun updateParticipants(participants: List<VideoElement>){
+    fun updateParticipants(participants: List<VideoElement>) {
         _participants.value = participants
     }
 
-    fun pinVideo(uiVideo: VideoElement?){
+    fun pinVideo(uiVideo: VideoElement?) {
         _activeSpeaker.value = uiVideo?.id
     }
 
-    fun receivedMessage(chatMessage: ChatMessage){
+    fun receivedMessage(chatMessage: ChatMessage) {
         viewModelScope.launch {
-            if(chatMessage.isOwn) return@launch
+            if (chatMessage.isOwn) return@launch
             eventChannel.send(Event.NewMessage)
             _hasUnread.value = true
         }
     }
 
-    fun openMore(){
+    fun openMore() {
         _hasUnread.value = false
         navigationDispatcher.emit {
             it.navigate(R.id.openMore)
         }
     }
 
-    fun navigate(@IdRes destination: Int){
+    fun navigate(@IdRes destination: Int) {
         navigationDispatcher.emit {
             it.navigate(destination)
         }
@@ -81,5 +83,5 @@ class CallViewModel @Inject constructor(
 }
 
 sealed class Event {
-    object NewMessage: Event()
+    object NewMessage : Event()
 }
