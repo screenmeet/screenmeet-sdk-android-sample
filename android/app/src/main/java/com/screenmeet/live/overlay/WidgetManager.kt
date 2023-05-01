@@ -3,27 +3,20 @@ package com.screenmeet.live.overlay
 import android.content.Context
 import androidx.activity.ComponentActivity
 import com.screenmeet.sdk.VideoElement
-
 class WidgetManager(val context: Context) {
 
     private var videoOverlay: VideoOverlay? = null
-    private var overlayPermissionDenied: Boolean = false
-    private val configurationWatcher = ConfigurationWatcher(context)
 
-    init {
-        configurationWatcher.subscribeChanges {
-            updateScreenConfig(it)
-        }
-    }
+    private var overlayPermissionDenied: Boolean = false
 
     fun showFloatingWidget(activity: ComponentActivity, videoElement: VideoElement) {
         if (PermissionProvider.canDrawOverlay(context)) {
-            doShowFloatingWidget(configurationWatcher.screenConfig, videoElement)
+            doShowFloatingWidget(videoElement)
         } else {
             if (overlayPermissionDenied) return
             PermissionProvider.requestOverlay(context, activity.activityResultRegistry) { granted ->
                 if (granted) {
-                    doShowFloatingWidget(configurationWatcher.screenConfig, videoElement)
+                    doShowFloatingWidget(videoElement)
                 } else {
                     overlayPermissionDenied = true
                 }
@@ -31,15 +24,17 @@ class WidgetManager(val context: Context) {
         }
     }
 
-    private fun doShowFloatingWidget(screenConfig: ScreenConfig, videoElement: VideoElement) {
+    private fun doShowFloatingWidget(videoElement: VideoElement) {
         val overlayAttached: Boolean
         if (videoOverlay == null) {
             val overlay = VideoOverlay(context)
-            overlayAttached = overlay.showOverlay(screenConfig)
+            overlayAttached = overlay.showOverlay()
             if (overlayAttached) {
                 videoOverlay = overlay
             }
-        } else overlayAttached = true
+        } else {
+            overlayAttached = true
+        }
 
         if (overlayAttached) {
             videoOverlay?.attachVideoTrack(videoElement)
@@ -51,9 +46,5 @@ class WidgetManager(val context: Context) {
             it.hideOverlay()
             videoOverlay = null
         }
-    }
-
-    private fun updateScreenConfig(screenConfig: ScreenConfig) {
-        videoOverlay?.updateScreenConfig(screenConfig)
     }
 }

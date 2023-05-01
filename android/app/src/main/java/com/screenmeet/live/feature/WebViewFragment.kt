@@ -20,7 +20,7 @@ class WebViewFragment : Fragment(R.layout.fragment_webview_confidentiality) {
         super.onViewCreated(view, savedInstanceState)
 
         binding.webView.apply {
-            applyInsetter { type(statusBars = true) { margin() } }
+            applyInsetter { type(statusBars = true, ime = true) { margin() } }
             ScreenMeet.setConfidential(this, true)
             settings.setSupportZoom(true)
             settings.builtInZoomControls = true

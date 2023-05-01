@@ -129,12 +129,26 @@
         android:id="@+id/fragmentCallMore"
         android:name="com.screenmeet.live.feature.call.more.MoreBottomSheet"
         tools:layout="@layout/dialog_more">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
     </dialog>
 
     <dialog
         android:id="@+id/fragmentPeople"
         android:name="com.screenmeet.live.feature.call.people.PeopleBottomSheet"
         tools:layout="@layout/dialog_people">
+
+        <action
+            android:id="@+id/goConnect"
+            app:destination="@id/fragmentConnect"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/main_graph"
+            app:popUpToInclusive="true" />
     </dialog>
 
 </navigation>

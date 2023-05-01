@@ -14,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import com.screenmeet.live.MainActivity
 import com.screenmeet.live.R
+import com.screenmeet.live.SupportApplication
 import com.screenmeet.live.databinding.OverlayWidgetBinding
 import com.screenmeet.live.util.DoubleTapListener
 import com.screenmeet.sdk.ScreenMeet.Companion.eglContext
@@ -40,6 +41,7 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
         val ctx = ContextThemeWrapper(context, R.style.AppTheme)
         val inflater = LayoutInflater.from(ctx)
         binding = OverlayWidgetBinding.inflate(inflater)
+        binding?.root?.isVisible = false
 
         overlayWidth = WindowManager.LayoutParams.WRAP_CONTENT
         overlayHeight = WindowManager.LayoutParams.WRAP_CONTENT
@@ -54,14 +56,18 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
                 override fun onFirstFrameRendered() {}
 
                 override fun onFrameResolutionChanged(width: Int, height: Int, rotation: Int) {
-                    val screenRatio = if(screen.height > screen.width){
-                        if(width > height){
+                    val screenRatio = if (screen.height > screen.width) {
+                        if (width > height) {
                             2f
-                        } else 3f
-                    } else {
-                        if(width > height){
+                        } else {
                             3f
-                        } else 2f
+                        }
+                    } else {
+                        if (width > height) {
+                            3f
+                        } else {
+                            2f
+                        }
                     }
 
                     val downScaleBy = min(
@@ -81,7 +87,7 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
                             layoutParams.width = widgetWidth.toInt()
                             layoutParams.height = widgetHeight.toInt()
                             windowManager.updateViewLayout(overlay, layoutParams)
-                            overlay.visibility = View.VISIBLE
+                            binding?.root?.isVisible = true
                         }
                         touchMoveEvent(widgetCornerMargin, widgetCornerMargin)
                         touchUpEvent(widgetCornerMargin, widgetCornerMargin)
@@ -93,7 +99,8 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
 
         return binding!!.root.apply {
             setPadding(widgetInnerPadding)
-            val doubleTapListener = DoubleTapListener(context){
+            val doubleTapListener = DoubleTapListener(context) {
+                if (!SupportApplication.inBackground) return@DoubleTapListener
                 val contextNew = this.context
                 val intent = Intent(contextNew, MainActivity::class.java)
                 intent.addFlags(FLAG_ACTIVITY_SINGLE_TOP)
@@ -111,7 +118,11 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
 
     fun attachVideoTrack(videoElement: VideoElement) {
         binding?.apply {
-            root.visibility = View.INVISIBLE
+            val trackId = renderer.trackId
+            if (trackId != null && trackId == videoElement.track?.id()) {
+                return
+            }
+
             val layoutParams = root.layoutParams
             if (layoutParams != null) {
                 layoutParams.width = widgetMaxSize
@@ -120,7 +131,6 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
             }
 
             nameTv.text = videoElement.userName
-
             if (videoElement.isAudioSharing) {
                 microButton.setImageResource(R.drawable.mic)
                 microButton.backgroundTintList = null
@@ -137,13 +147,18 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
             renderer.render(videoTrack)
             renderer.isVisible = hasTrack
             logo.isVisible = !hasTrack
-            root.visibility = View.VISIBLE
         }
     }
 
     override fun hideOverlay() {
         super.hideOverlay()
         binding?.renderer?.clear()
+    }
+
+    override fun onConfigChanged() {
+        overlay?.let {
+            applyDiff(it, 0, 0, true)
+        }
     }
 
     private fun processTouch(event: MotionEvent) {
@@ -198,13 +213,13 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
 
         val widgetX = layoutParamsWidget.x
         val widgetY = layoutParamsWidget.y
-        val widgetHeight: Int = view.measuredHeight
-        val widgetWidth: Int = view.measuredWidth
+        val widgetHeight = view.measuredHeight
+        val widgetWidth = view.measuredWidth
         val screenHeight = screen.height
         val screenWidth = screen.width
 
-        val widgetMaxY: Int = screenHeight - widgetHeight - statusBarHeight
-        val widgetMaxX = screenWidth - widgetWidth
+        val widgetMaxY = screenHeight - widgetHeight - screen.topInset - screen.bottomInset
+        val widgetMaxX = screenWidth - widgetWidth - screen.leftInset - screen.rightInset
 
         var widgetNewY = widgetY + yDiff
         var widgetNewX = widgetX + xDiff
@@ -212,16 +227,26 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
         if (stickToCorner) {
             widgetNewX = if (widgetNewX > widgetMaxX / 2) {
                 widgetMaxX - widgetCornerMargin
-            } else 0 + widgetCornerMargin
+            } else {
+                0 + widgetCornerMargin
+            }
 
             widgetNewY = if (widgetNewY > widgetMaxY / 2) {
                 widgetMaxY - widgetCornerMargin
-            } else 0 + widgetCornerMargin
+            } else {
+                0 + widgetCornerMargin
+            }
         } else {
-            if (widgetNewY < 0) widgetNewY = 0 else if (widgetNewY > widgetMaxY) widgetNewY =
-                widgetMaxY
-            if (widgetNewX < 0) widgetNewX = 0 else if (widgetNewX > widgetMaxX) widgetNewX =
-                widgetMaxX
+            if (widgetNewY < 0) {
+                widgetNewY = 0
+            } else if (widgetNewY > widgetMaxY) {
+                widgetNewY = widgetMaxY
+            }
+            if (widgetNewX < 0) {
+                widgetNewX = 0
+            } else if (widgetNewX > widgetMaxX) {
+                widgetNewX = widgetMaxX
+            }
         }
 
         layoutParamsWidget.x = widgetNewX

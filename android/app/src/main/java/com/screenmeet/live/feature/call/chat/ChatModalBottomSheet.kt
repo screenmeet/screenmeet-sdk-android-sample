@@ -37,8 +37,9 @@ class ChatModalBottomSheet : BottomSheetDialogFragment() {
                 findViewById<View>(com.google.android.material.R.id.container)?.apply {
                     fitsSystemWindows = false
                 }
-                findViewById<View>(com.google.android.material.R.id.coordinator)?.fitsSystemWindows =
-                    false
+                findViewById<View>(com.google.android.material.R.id.coordinator)?.apply {
+                    fitsSystemWindows = false
+                }
             }
         }
 
@@ -96,7 +97,9 @@ class ChatModalBottomSheet : BottomSheetDialogFragment() {
                 val chatAdapter = adapter
                 if (chatAdapter is ChatAdapter) {
                     val chatMessages = ScreenMeet.getChatMessages()
-                    chatAdapter.submitList(chatMessages) { smoothScrollToPosition(chatMessages.size) }
+                    chatAdapter.submitList(chatMessages) {
+                        smoothScrollToPosition(chatMessages.size)
+                    }
                 }
             }
         }

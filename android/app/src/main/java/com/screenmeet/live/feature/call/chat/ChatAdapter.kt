@@ -45,7 +45,7 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.ViewHolder>(ChatMessage
                 color = res.getColor(R.color.dark_grey, null)
             }
 
-            if(chatMessage.status == ChatMessage.Status.IN_TRANSFER){
+            if (chatMessage.status == ChatMessage.Status.IN_TRANSFER) {
                 color = ColorUtils.setAlphaComponent(color, 100)
             }
 

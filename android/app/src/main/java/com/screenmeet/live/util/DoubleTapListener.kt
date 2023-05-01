@@ -13,8 +13,8 @@ class DoubleTapListener(val context: Context, onDoubleTap: () -> Unit) : View.On
                 onDoubleTap()
                 return super.onDoubleTap(e)
             }
-
-        })
+        }
+    )
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(event)

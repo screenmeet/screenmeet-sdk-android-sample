@@ -11,7 +11,7 @@ typealias ActionClick = (MoreActionItem) -> Unit
 
 class MoreDialogAdapter(
     private val clickListener: ActionClick
-): ListAdapter<MoreActionItem, MoreDialogAdapter.ViewHolder>(ItemsComparator()) {
+) : ListAdapter<MoreActionItem, MoreDialogAdapter.ViewHolder>(ItemsComparator()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context

@@ -14,7 +14,7 @@ import org.webrtc.VideoTrack
 
 typealias onFramesStuck = (Boolean) -> Unit
 
-class VideoView: SurfaceViewRenderer {
+class VideoView : SurfaceViewRenderer {
 
     private val stuckThresholdNs = 5000000000L // 5sec
 
@@ -25,16 +25,16 @@ class VideoView: SurfaceViewRenderer {
     private var lastFrameNs: Long = 0
     private var frameStuck: Boolean = false
 
-    constructor(context: Context?): super(context)
+    val trackId: String?
+        get() = videoTrack?.id()
 
-    constructor(context: Context?, attrs: AttributeSet?): super(context, attrs)
+    constructor(context: Context?) : super(context)
 
-    override fun init(
-        eglContext: EglBase.Context,
-        events: RendererCommon.RendererEvents?
-    ){
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+
+    override fun init(eglContext: EglBase.Context, events: RendererCommon.RendererEvents?) {
         val track = videoTrack
-        if (track != null){
+        if (track != null) {
             clean()
             egl = eglContext
             rendererEvents = events
@@ -45,8 +45,8 @@ class VideoView: SurfaceViewRenderer {
         }
     }
 
-    fun render(track: VideoTrack?){
-        if (track == null){
+    fun render(track: VideoTrack?) {
+        if (track == null) {
             clear()
             return
         }
@@ -64,7 +64,7 @@ class VideoView: SurfaceViewRenderer {
         }
     }
 
-    fun clear(){
+    fun clear() {
         videoTrack?.let {
             it.removeSink(frameTrackingSink)
             videoTrack = null
@@ -73,24 +73,24 @@ class VideoView: SurfaceViewRenderer {
         }
     }
 
-    fun listenFramesStuck(scope: CoroutineScope, stuck: onFramesStuck){
+    fun listenFramesStuck(scope: CoroutineScope, stuck: onFramesStuck) {
         scope.launch {
             stuck(frameStuck)
             while (true) {
-                if (videoTrack != null){
-                    if (System.nanoTime() - lastFrameNs > stuckThresholdNs){
-                        if (!frameStuck){
+                if (videoTrack != null) {
+                    if (System.nanoTime() - lastFrameNs > stuckThresholdNs) {
+                        if (!frameStuck) {
                             stuck(true)
                             frameStuck = true
                         }
                     } else {
-                        if (frameStuck){
+                        if (frameStuck) {
                             stuck(false)
                             frameStuck = false
                         }
                     }
                 } else {
-                    if (frameStuck){
+                    if (frameStuck) {
                         stuck(false)
                         frameStuck = false
                     }
@@ -100,7 +100,7 @@ class VideoView: SurfaceViewRenderer {
         }
     }
 
-    private fun clean(){
+    private fun clean() {
         videoTrack?.let {
             it.removeSink(frameTrackingSink)
             clearImage()

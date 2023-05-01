@@ -58,12 +58,12 @@ class ConfidentialityFragment : Fragment(R.layout.fragment_ui_confidentiality) {
 
     private fun applyInsets() {
         binding.obfuscateContainer.applyInsetter {
-            type(statusBars = true, navigationBars = true){
+            type(statusBars = true, navigationBars = true) {
                 padding()
             }
         }
         binding.controlContainer.applyInsetter {
-            type(navigationBars = true){
+            type(navigationBars = true) {
                 margin()
             }
         }

@@ -17,7 +17,6 @@ import com.screenmeet.sdk.VideoElement
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class PeopleBottomSheet : BottomSheetDialogFragment() {
 
@@ -44,13 +43,13 @@ class PeopleBottomSheet : BottomSheetDialogFragment() {
         ScreenMeet.registerEventListener(screenMeetListener)
     }
 
-    private fun prepare(){
+    private fun prepare() {
         val context = binding.root.context
         val layoutManager = LinearLayoutManager(context)
         val drawable = ContextCompat.getDrawable(context, R.drawable.divider)!!
         drawable.alpha = 60
         val decoration = DividerDecoration(drawable)
-        adapter = PeopleAdapter{}
+        adapter = PeopleAdapter {}
 
         binding.apply {
             binding.actionItemsRv.addItemDecoration(decoration)
@@ -59,7 +58,7 @@ class PeopleBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun updateParticipants(){
+    private fun updateParticipants() {
         val participant = ScreenMeet.localParticipant()
         val participants = ScreenMeet.participants()
         adapter.submitList(participants.plus(participant))

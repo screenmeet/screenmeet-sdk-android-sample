@@ -46,7 +46,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
         binding.featureRecycler.adapter = featureAdapter
         binding.featureRecycler.layoutManager = StaggeredGridLayoutManager(
-            2, StaggeredGridLayoutManager.VERTICAL
+            2,
+            StaggeredGridLayoutManager.VERTICAL
         )
         featureAdapter.submitList(features())
     }
@@ -59,7 +60,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         val features = mutableListOf(
             Pair("Camera Control Demo", R.id.goCamera),
             Pair("Confidential WebView Demo", R.id.goWebView),
-            Pair("Confidentiality Demo", R.id.goConfidentiality),
+            Pair("Confidentiality Demo", R.id.goConfidentiality)
         )
         if (react() != null) {
             features.add(Pair("React Native Activity Demo", -1))

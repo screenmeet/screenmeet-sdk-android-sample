@@ -49,7 +49,9 @@ class ForegroundService : Service() {
     override fun onBind(intent: Intent): IBinder {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
-        } else stopForeground(true)
+        } else {
+            stopForeground(true)
+        }
         configurationChanged = false
         return binder
     }
@@ -58,7 +60,9 @@ class ForegroundService : Service() {
     override fun onRebind(intent: Intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
-        } else stopForeground(true)
+        } else {
+            stopForeground(true)
+        }
         configurationChanged = false
         super.onRebind(intent)
     }
@@ -79,8 +83,10 @@ class ForegroundService : Service() {
             val intent = Intent(this, MainActivity::class.java)
             intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true)
             val activityPendingIntent = PendingIntent.getActivity(
-                this, 0,
-                Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE
+                this,
+                0,
+                Intent(this, MainActivity::class.java),
+                PendingIntent.FLAG_IMMUTABLE
             )
             val resources = applicationContext.resources
             val builder = NotificationCompat.Builder(this, ANDROID_CHANNEL_ID)

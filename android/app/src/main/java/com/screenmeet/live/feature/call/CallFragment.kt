@@ -56,7 +56,17 @@ class CallFragment : Fragment(R.layout.fragment_call) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setUpView()
+        observeState()
 
+        getNavigationResult<Int?>(R.id.fragmentVideoCall, NAVIGATION_DESTINATION) { dest ->
+            dest?.let {
+                viewModel.navigate(it)
+            }
+        }
+    }
+
+    private fun setUpView() {
         // The same eglContext as a capturing one should be used to preview camera
         eglBase = ScreenMeet.eglContext!!
         participantsAdapter = ParticipantsAdapter(
@@ -82,19 +92,23 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                     override fun onFirstFrameRendered() {}
 
                     override fun onFrameResolutionChanged(width: Int, height: Int, i2: Int) {
-                    Handler(Looper.getMainLooper()).post {
-                        binding.activeStreamRenderer.zoomRenderer.let {
-                            val layoutParams = it.layoutParams
-                            layoutParams.width = width
-                            layoutParams.height = height
-                            binding.activeStreamRenderer.zoomContainer.updateViewLayout(it, layoutParams)
-                            if (width > 0 && height > 0){
-                                binding.activeStreamRenderer.zoomContainer.isVisible = true
+                        Handler(Looper.getMainLooper()).post {
+                            binding.activeStreamRenderer.zoomRenderer.let {
+                                val layoutParams = it.layoutParams
+                                layoutParams.width = width
+                                layoutParams.height = height
+                                binding.activeStreamRenderer.zoomContainer.updateViewLayout(
+                                    it,
+                                    layoutParams
+                                )
+                                if (width > 0 && height > 0) {
+                                    binding.activeStreamRenderer.zoomContainer.isVisible = true
+                                }
                             }
                         }
                     }
                 }
-            })
+            )
 
             activeStreamRenderer.zoomRenderer.listenFramesStuck(lifecycleScope) { stuck ->
                 binding.activeStreamRenderer.frameStuckSpinner.isVisible = stuck
@@ -110,50 +124,21 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             participantsRecycler.setOnClickListener(openControlsListener)
             activeStreamRenderer.root.setOnClickListener(openControlsListener)
             activeStreamRenderer.zoomRenderer.setOnClickListener(openControlsListener)
-            hangUp.setOnClickListener { ScreenMeet.disconnect() }
-        }
-
-        getNavigationResult<Int?>(R.id.fragmentVideoCall, NAVIGATION_DESTINATION){ dest ->
-            dest?.let {
-                viewModel.navigate(it)
+            hangUp.setOnClickListener {
+                participantsAdapter.dispose(binding.participantsRecycler)
+                binding.activeStreamRenderer.zoomRenderer.clear()
+                ScreenMeet.disconnect()
             }
         }
+    }
 
-        lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                viewModel.participants.collect { participants ->
-                    val hasActiveStream = viewModel.activeSpeaker.value != null
-                    binding.activeStreamRenderer.root.isVisible = hasActiveStream
-                    if (hasActiveStream) {
-                        displayActiveSpeakerLayout(participants)
-                    } else displayGridLayout(participants)
-                    loadState()
-                }
-            }
-        }
+    private fun observeState() {
+        observeParticipants()
+
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.activeSpeaker.collect { activeTrackId ->
-                    val context = binding.root.context
-                    val hasActiveStream = activeTrackId != null
-                    binding.activeStreamRenderer.root.isVisible = hasActiveStream
-                    repeat(binding.participantsRecycler.itemDecorationCount) {
-                        binding.participantsRecycler.removeItemDecorationAt(it)
-                    }
-                    if (hasActiveStream) {
-                        binding.participantsRecycler.layoutManager = LinearLayoutManager(
-                            context,
-                            LinearLayoutManager.HORIZONTAL,
-                            false
-                        )
-                        val linearItemDecoration = ParticipantsHorizontalItemDecoration(30)
-                        binding.participantsRecycler.addItemDecoration(linearItemDecoration)
-                    } else {
-                        binding.participantsRecycler.layoutManager = GridLayoutManager(context, 2)
-                        val gridItemDecoration = ParticipantsGridItemDecoration(2, 30)
-                        binding.participantsRecycler.addItemDecoration(gridItemDecoration)
-                    }
-                    loadState()
+                    switchActiveSpeakerTrack(activeTrackId)
                 }
             }
         }
@@ -197,15 +182,56 @@ class CallFragment : Fragment(R.layout.fragment_call) {
         }
     }
 
-    private fun displayActiveSpeakerLayout(participants: List<VideoElement>){
+    private fun observeParticipants() {
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.participants.collect { participants ->
+                    val hasActiveStream = viewModel.activeSpeaker.value != null
+                    binding.activeStreamRenderer.root.isVisible = hasActiveStream
+                    if (hasActiveStream) {
+                        displayActiveSpeakerLayout(participants)
+                    } else {
+                        displayGridLayout(participants)
+                    }
+                    loadState()
+                }
+            }
+        }
+    }
+
+    private fun switchActiveSpeakerTrack(activeTrackId: String?) {
+        val context = binding.root.context
+        val hasActiveStream = activeTrackId != null
+        binding.activeStreamRenderer.root.isVisible = hasActiveStream
+        repeat(binding.participantsRecycler.itemDecorationCount) {
+            binding.participantsRecycler.removeItemDecorationAt(it)
+        }
+        if (hasActiveStream) {
+            val linearLayoutManager = LinearLayoutManager(
+                context,
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+            binding.participantsRecycler.layoutManager = linearLayoutManager
+            val linearItemDecoration = ParticipantsHorizontalItemDecoration(30)
+            binding.participantsRecycler.addItemDecoration(linearItemDecoration)
+        } else {
+            binding.participantsRecycler.layoutManager = GridLayoutManager(context, 2)
+            val gridItemDecoration = ParticipantsGridItemDecoration(2, 30)
+            binding.participantsRecycler.addItemDecoration(gridItemDecoration)
+        }
+        loadState()
+    }
+
+    private fun displayActiveSpeakerLayout(participants: List<VideoElement>) {
         dispatchParticipants(participants)
     }
 
-    private fun displayGridLayout(participants: List<VideoElement>){
+    private fun displayGridLayout(participants: List<VideoElement>) {
         dispatchParticipants(participants)
     }
 
-    private fun dispatchParticipants(participants: List<VideoElement>){
+    private fun dispatchParticipants(participants: List<VideoElement>) {
         participantsAdapter.submitList(participants)
     }
 
@@ -238,7 +264,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                 val hasTrack = videoTrack != null
                 activeStreamRenderer.zoomRenderer.render(videoTrack)
                 binding.activeStreamRenderer.logo.isVisible = !hasTrack
-                if(!hasTrack){
+                if (!hasTrack) {
                     binding.activeStreamRenderer.zoomContainer.isVisible = false
                 }
             }
@@ -256,7 +282,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
         background.setColor(ContextCompat.getColor(button.context, colorRes))
     }
 
-    private fun showControls(){
+    private fun showControls() {
         binding.buttonsContainer.visibility = View.VISIBLE
         binding.buttonsContainer.alpha = 0.0f
 
@@ -266,7 +292,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             .setListener(null)
     }
 
-    private fun hideControls(){
+    private fun hideControls() {
         binding.buttonsContainer.animate()
             .translationY(binding.buttonsContainer.height.toFloat())
             .alpha(0.0f)
@@ -277,8 +303,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             })
     }
 
-
-    private fun playChat(){
+    private fun playChat() {
         binding.buttonsContainer.visibility = View.VISIBLE
         binding.buttonsContainer.alpha = 0.0f
         binding.hangUp.visibility = View.INVISIBLE
@@ -309,9 +334,11 @@ class CallFragment : Fragment(R.layout.fragment_call) {
     override fun onPause() {
         super.onPause()
         ScreenMeet.unregisterEventListener(eventListener)
-        participantsAdapter.dispose(binding.participantsRecycler)
+        if (ScreenMeet.connectionState() !is ScreenMeet.ConnectionState.Disconnected) {
+            participantsAdapter.dispose(binding.participantsRecycler)
+            binding.activeStreamRenderer.zoomRenderer.clear()
+        }
         participantsAdapter.submitList(listOf())
-        binding.activeStreamRenderer.zoomRenderer.clear()
     }
 
     private val eventListener: SessionEventListener = object : SessionEventListener {
@@ -360,8 +387,12 @@ class CallFragment : Fragment(R.layout.fragment_call) {
 
         override fun onConnectionStateChanged(newState: ScreenMeet.ConnectionState) {
             when (newState) {
-                ScreenMeet.ConnectionState.Connected -> loadState()
-                ScreenMeet.ConnectionState.Reconnecting -> viewModel.pinVideo(null)
+                is ScreenMeet.ConnectionState.Connected -> loadState()
+                is ScreenMeet.ConnectionState.Reconnecting -> viewModel.pinVideo(null)
+                is ScreenMeet.ConnectionState.Disconnected -> {
+                    participantsAdapter.dispose(binding.participantsRecycler)
+                    binding.activeStreamRenderer.zoomRenderer.clear()
+                }
                 else -> {}
             }
         }
@@ -380,7 +411,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
     private fun checkPermission(
         context: Context,
         permission: String = Manifest.permission.POST_NOTIFICATIONS
-    ){
+    ) {
         val selfPermission = ContextCompat.checkSelfPermission(context, permission)
         when {
             selfPermission == PackageManager.PERMISSION_GRANTED -> return
@@ -391,12 +422,12 @@ class CallFragment : Fragment(R.layout.fragment_call) {
         }
     }
 
-    private fun registerForPermissionResult(){
+    private fun registerForPermissionResult() {
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
             val atLeastTiramisu = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-            if (!isGranted && atLeastTiramisu){
+            if (!isGranted && atLeastTiramisu) {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                     showNotificationsRationale(Manifest.permission.POST_NOTIFICATIONS)
                 }
@@ -404,16 +435,15 @@ class CallFragment : Fragment(R.layout.fragment_call) {
         }
     }
 
-    private fun showNotificationsRationale(permission: String){
+    private fun showNotificationsRationale(permission: String) {
         AlertDialog.Builder(requireContext(), R.style.RoundedDialog).apply {
             setTitle(R.string.app_name)
             setMessage(R.string.notifications_rationale)
             setCancelable(true)
-            setPositiveButton(R.string.allow){ _, _ ->
+            setPositiveButton(R.string.allow) { _, _ ->
                 permissionLauncher?.launch(permission)
             }
-            setNegativeButton(R.string.deny){ _, _ ->
-
+            setNegativeButton(R.string.deny) { _, _ ->
             }
             show()
         }
@@ -422,6 +452,4 @@ class CallFragment : Fragment(R.layout.fragment_call) {
     init {
         registerForPermissionResult()
     }
-
 }
-
