@@ -17,7 +17,6 @@ import com.screenmeet.live.SupportApplication.Companion.startListeningForeground
 import com.screenmeet.live.SupportApplication.Companion.stopListeningForeground
 import com.screenmeet.live.SupportApplication.Companion.widgetManager
 import com.screenmeet.live.databinding.ActivityMainBinding
-import com.screenmeet.live.util.LogsDebugListener
 import com.screenmeet.live.util.NavigationDispatcher
 import com.screenmeet.sdk.Entitlement
 import com.screenmeet.sdk.Feature
@@ -25,6 +24,7 @@ import com.screenmeet.sdk.Participant
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.SessionEventListener
 import com.screenmeet.sdk.VideoElement
+import com.screenmeet.sdk.util.LogsDebugListener
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
 import kotlinx.coroutines.launch
@@ -61,7 +61,6 @@ class MainActivity : AppCompatActivity() {
         initNavigation()
 
         ScreenMeet.registerEventListener(eventListener)
-        ScreenMeet.registerEventListener(logsListener)
 
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -170,6 +169,11 @@ class MainActivity : AppCompatActivity() {
         override fun onFeatureStopped(feature: Feature) {
             binding.stopRemoteAssist.isVisible = false
         }
+
+        override fun onLocalVideoStopped(source: ScreenMeet.VideoSource) = displayWidgetIfNeeded()
+
+        override fun onLocalVideoCreated(source: ScreenMeet.VideoSource, video: VideoElement) =
+            displayWidgetIfNeeded()
     }
 
     private fun showAlert(dialogTittle: String, message: String, confirmed: () -> Unit) {
@@ -218,6 +222,7 @@ class MainActivity : AppCompatActivity() {
         when (ScreenMeet.connectionState()) {
             is ScreenMeet.ConnectionState.Connecting,
             is ScreenMeet.ConnectionState.Reconnecting -> {
+                widgetManager.hideFloatingWidget()
                 binding.statusView.isVisible = true
                 binding.statusView.setBackgroundColor(ContextCompat.getColor(this, R.color.yellow))
                 binding.connectionTv.text = getString(R.string.session_connecting)

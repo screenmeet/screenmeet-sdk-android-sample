@@ -2,7 +2,9 @@ package com.screenmeet.live.feature.call
 
 import android.content.Context
 import android.util.AttributeSet
+import com.screenmeet.sdk.accessSafe
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.webrtc.EglBase
@@ -24,6 +26,7 @@ class VideoView : SurfaceViewRenderer {
     private var videoTrack: VideoTrack? = null
     private var lastFrameNs: Long = 0
     private var frameStuck: Boolean = false
+    private var frameTrackingJob: Job? = null
 
     val trackId: String?
         get() = videoTrack?.id()
@@ -33,48 +36,49 @@ class VideoView : SurfaceViewRenderer {
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
 
     override fun init(eglContext: EglBase.Context, events: RendererCommon.RendererEvents?) {
-        val track = videoTrack
-        if (track != null) {
-            clean()
-            egl = eglContext
-            rendererEvents = events
-            render(track)
-        } else {
-            egl = eglContext
-            rendererEvents = events
-        }
+        egl = eglContext
+        rendererEvents = events
+        setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
     }
 
     fun render(track: VideoTrack?) {
-        if (track == null) {
-            clear()
+        val currentTrack = videoTrack
+        val hasTrack = currentTrack != null
+
+        if (currentTrack == track) {
             return
         }
 
-        val currentTrack = videoTrack
-        videoTrack = if (currentTrack != null) {
-            currentTrack.removeSink(frameTrackingSink)
-            track.addSink(frameTrackingSink)
-            track
+        if (track != null) {
+            if (hasTrack) {
+                currentTrack.accessSafe {
+                    it.removeSink(frameTrackingSink)
+                }
+            } else {
+                super.init(egl, rendererEvents)
+            }
+            videoTrack = track
+            track.accessSafe {
+                it.addSink(frameTrackingSink)
+            }
         } else {
-            super.init(egl, rendererEvents)
-            setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
-            track.addSink(frameTrackingSink)
-            track
+            clear()
         }
     }
 
     fun clear() {
-        videoTrack?.let {
+        videoTrack.accessSafe {
             it.removeSink(frameTrackingSink)
-            videoTrack = null
-            clearImage()
-            release()
         }
+        clearImage()
+        release()
+        videoTrack = null
+        frameTrackingJob?.cancel()
+        frameTrackingJob = null
     }
 
     fun listenFramesStuck(scope: CoroutineScope, stuck: onFramesStuck) {
-        scope.launch {
+        frameTrackingJob = scope.launch {
             stuck(frameStuck)
             while (true) {
                 if (videoTrack != null) {
@@ -97,13 +101,6 @@ class VideoView : SurfaceViewRenderer {
                 }
                 delay(500)
             }
-        }
-    }
-
-    private fun clean() {
-        videoTrack?.let {
-            it.removeSink(frameTrackingSink)
-            clearImage()
         }
     }
 

@@ -23,6 +23,8 @@ class ParticipantsAdapter(
     private val onClick: PinClick
 ) : ListAdapter<VideoElement, ParticipantsAdapter.ViewHolder>(UiVideoComparator()) {
 
+    val itemSpacing = 30
+
     private var recyclerSize = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -36,7 +38,7 @@ class ParticipantsAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val participant = getItem(position)
-        holder.bind(scope, participant, recyclerSize - 90, onClick)
+        holder.bind(scope, participant, recyclerSize - itemSpacing * 3, onClick)
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
@@ -62,36 +64,42 @@ class ParticipantsAdapter(
                     recyclerSize / 2
                 )
                 itemView.layoutParams = layoutParams
+
+                val videoTrack = video.track
+                val hasTrack = videoTrack != null
+                renderer.render(videoTrack)
+
+                if (hasTrack) {
+                    renderer.listenFramesStuck(scope) { stuck ->
+                        frameStuckSpinner.isVisible = stuck
+                    }
+                } else {
+                    frameStuckSpinner.isVisible = false
+                }
+
                 nameTv.text = video.userName
+                logo.isVisible = !hasTrack
+                renderer.isVisible = hasTrack
+                root.setOnTouchListener(
+                    DoubleTapListener(root.context) {
+                        onClick(video)
+                    }
+                )
 
                 pinButton.setOnClickListener {
                     onClick(video)
                 }
-                val doubleTapListener = DoubleTapListener(root.context) {
-                    onClick(video)
-                }
-                root.setOnTouchListener(doubleTapListener)
 
                 if (video.isAudioSharing) {
                     microButton.setImageResource(R.drawable.mic)
                     microButton.backgroundTintList = null
                     microButton.colorFilter = null
                 } else {
-                    val context = binding.root.context
+                    val context = root.context
                     microButton.setImageResource(R.drawable.mic_off)
                     val color = ContextCompat.getColor(context, R.color.bright_red)
                     microButton.setColorFilter(color)
                 }
-
-                val videoTrack = video.track
-                renderer.render(videoTrack)
-                renderer.listenFramesStuck(scope) { stuck ->
-                    binding.frameStuckSpinner.isVisible = stuck
-                }
-
-                val hasTrack = videoTrack != null
-                renderer.isVisible = hasTrack
-                logo.isVisible = !hasTrack
             }
         }
 

@@ -7,6 +7,7 @@ import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import com.mukesh.OtpView
 import com.screenmeet.live.R
@@ -37,7 +38,16 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
         if (ScreenMeet.connectionState() is Connected) {
             navigationDispatcher.emit { it.navigate(R.id.goVideoCall) }
         } else {
-            binding.otpView.setOtpCompletionListener { code -> connect(code) }
+            binding.codeEt.doAfterTextChanged { text ->
+                text ?: return@doAfterTextChanged
+                val isEnabled = text.length == 6 || text.length == 9
+                binding.connectBtn.isEnabled = isEnabled
+                binding.connectBtn.alpha = if (isEnabled) 0.7f else 0.3f
+            }
+            binding.connectBtn.setOnClickListener {
+                val code = binding.codeEt.text.toString()
+                connect(code)
+            }
         }
     }
 
@@ -65,8 +75,9 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
             binding.resultTv.isVisible = false
         }
         binding.loadingIndicator.isVisible = show
-        binding.otpView.isEnabled = !show
+        binding.codeEt.isEnabled = !show
         binding.hintTv.isVisible = !show
+        binding.connectBtn.isEnabled = !show
     }
 
     private fun connectionSuccess() {
@@ -96,7 +107,7 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
     }
 
     private fun applyInsets() {
-        binding.otpView.applyInsetter { type(statusBars = true) { margin() } }
+        binding.codeEt.applyInsetter { type(statusBars = true) { margin() } }
         binding.hintTv.applyInsetter { type(ime = true) { margin() } }
         binding.loadingIndicator.applyInsetter { type(ime = true) { margin() } }
     }
@@ -123,7 +134,7 @@ class ConnectFragment : Fragment(R.layout.fragment_connect) {
 
     private fun showError(message: String, clear: Boolean = true) {
         if (clear) {
-            binding.otpView.editableText.clear()
+            binding.codeEt.editableText.clear()
         }
         binding.resultTv.isVisible = true
         val color = ContextCompat.getColor(binding.root.context, R.color.bright_red)
