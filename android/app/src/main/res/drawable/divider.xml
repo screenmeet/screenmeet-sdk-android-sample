@@ -1,8 +1,8 @@
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:insetLeft="@dimen/marginSmall"
-    android:insetRight="@dimen/marginSmall" >
+        android:insetLeft="@dimen/marginSmall"
+        android:insetRight="@dimen/marginSmall">
     <shape android:shape="rectangle">
         <solid android:color="@color/basic_white" />
-        <size android:height="1dp"/>
+        <size android:height="1dp" />
     </shape>
 </inset>

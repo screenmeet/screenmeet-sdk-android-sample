@@ -85,7 +85,7 @@ abstract class BaseOverlay(val context: Context) {
     }
 
     private fun getOverlayFlagsTouch() = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 
     @Suppress("Deprecation")
     private fun getOverlayType(): Int {

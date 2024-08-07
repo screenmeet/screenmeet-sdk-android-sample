@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/container"
-    android:layout_width="@dimen/feature_item_size"
-    android:layout_height="@dimen/feature_item_size"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/featureTv"
+        android:id="@+id/container"
         android:layout_width="@dimen/feature_item_size"
         android:layout_height="@dimen/feature_item_size"
-        android:layout_gravity="center"
-        android:background="@drawable/background_rounded_feature"
-        android:fontFamily="sans-serif"
-        android:gravity="center"
-        android:padding="@dimen/marginSmall"
-        android:textAlignment="center"
-        android:textColor="@color/white"
-        android:textSize="14sp" />
+        android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/featureTv"
+            android:layout_width="@dimen/feature_item_size"
+            android:layout_height="@dimen/feature_item_size"
+            android:layout_gravity="center"
+            android:background="@drawable/background_rounded_feature"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:padding="@dimen/marginSmall"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
 </LinearLayout>

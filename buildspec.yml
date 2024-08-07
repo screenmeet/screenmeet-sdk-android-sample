@@ -9,13 +9,13 @@ phases:
       - cd android
       - mkdir cmdline-tools
       - cd cmdline-tools
-      - wget https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
+      - wget https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip >/dev/null
       - unzip commandlinetools-linux-*.zip >/dev/null
       - mv cmdline-tools/ tools/
       - tools/bin/sdkmanager --update >/dev/null
-      - yes | tools/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" >/dev/null
+      - yes | tools/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" >/dev/null
       - cd ..
-      - export ANDROID_SDK_ROOT=$pwd
+      - export ANDROID_HOME=$(pwd)
       - npm install --location=global appcenter-cli
   build:
     commands:

@@ -6,6 +6,7 @@
     <string name="waiting_for_knock">Waiting for permission to join</string>
     <string name="knock_denied">Session knock denied</string>
     <string name="connect">Connect</string>
+    <string name="clear">Clear</string>
     <string name="connected">Connected</string>
     <string name="connection_error">Connection error</string>
     <string name="session_connecting">Session connecting</string>
@@ -14,6 +15,8 @@
 
     <string name="share_screen">Share Screen</string>
     <string name="share_screen_stop">Stop Sharing Screen</string>
+    <string name="share_app">Share Application</string>
+    <string name="share_app_stop">Stop Sharing Application</string>
     <string name="share_cam_front">Share Camera Front</string>
     <string name="share_cam_front_stop">Stop Sharing Camera Front</string>
     <string name="share_cam_back">Share Camera Back</string>
@@ -28,4 +31,16 @@
     <string name="allow">Allow</string>
     <string name="deny">Deny</string>
     <string name="notifications_rationale">Notifications needed for ScreenMeet to stay connected while app in background</string>
+    <string name="connect_hint">Please, provide a code for your ScreenMeet session</string>
+    <string name="session_code_hint">Session Code</string>
+    <string name="endpoint_hint">URL Endpoint</string>
+    <string name="server_tag_hint">Server Tag</string>
+    <string name="api_key_hint">API key</string>
+    <string name="settings_tittle">Custom Settings</string>
+    <string name="save_label">Save</string>
+    <string name="cancel_label">Cancel</string>
+    <string name="restart_note">Note: changes are applied after app restart. Save empty for default</string>
+    <string name="screenshare_request">Screen Share request</string>
+    <string name="screenshare_request_hint">Participant %1$s requested you to share a Screen</string>
+    <string name="background_screenshare_request">%1$s requested permission to view your screen. Open %2$s to accept</string>
 </resources>

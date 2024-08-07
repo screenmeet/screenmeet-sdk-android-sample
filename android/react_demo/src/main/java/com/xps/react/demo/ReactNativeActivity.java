@@ -15,7 +15,7 @@ import com.facebook.soloader.SoLoader;
 
 import java.util.List;
 
-public class ReactNativeActivity extends AppCompatActivity  implements DefaultHardwareBackBtnHandler {
+public class ReactNativeActivity extends AppCompatActivity implements DefaultHardwareBackBtnHandler {
 
     private ReactInstanceManager reactInstanceManager;
     private ReactRootView reactRootView;

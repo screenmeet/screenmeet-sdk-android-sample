@@ -1,4 +1,4 @@
-package com.screenmeet.live.util
+package com.screenmeet.live.tools
 
 import android.view.LayoutInflater
 import android.view.View

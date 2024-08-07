@@ -1,58 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="@dimen/feature_item_size"
-    android:layout_height="@dimen/feature_item_size"
-    android:backgroundTint="@color/dark_grey"
-    android:background="@drawable/background_rounded_view">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="@dimen/feature_item_size"
+        android:layout_height="@dimen/feature_item_size"
+        android:backgroundTint="@color/dark_grey"
+        android:background="@drawable/background_rounded_view">
 
     <com.screenmeet.live.feature.call.VideoView
-        android:id="@+id/renderer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/marginSmallest"
-        android:visibility="gone"/>
+            android:id="@+id/renderer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/marginSmallest"
+            android:visibility="gone" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/logo"
-        android:layout_width="@dimen/item_logo"
-        android:layout_height="@dimen/item_logo"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_logo"/>
+            android:id="@+id/logo"
+            android:layout_width="@dimen/item_logo"
+            android:layout_height="@dimen/item_logo"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_logo" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="start|bottom"
-        android:gravity="start|center_vertical"
-        android:background="@color/darker_grey"
-        android:padding="@dimen/marginSmallest">
-
-        <ImageView
-            android:id="@+id/microButton"
-            android:layout_width="@dimen/small_media_icon_size"
-            android:layout_height="@dimen/small_media_icon_size"
-            android:layout_marginEnd="@dimen/marginSmall"
-            app:srcCompat="@drawable/mic" />
-
-        <TextView
-            android:id="@+id/nameTv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/action_item_font"
-            android:layout_marginEnd="@dimen/marginSmall"
-            android:textColor="@color/basic_white"/>
+            android:orientation="horizontal"
+            android:layout_gravity="start|bottom"
+            android:gravity="start|center_vertical"
+            android:background="@color/darker_grey"
+            android:padding="@dimen/marginSmallest">
+
+        <ImageView
+                android:id="@+id/microButton"
+                android:layout_width="@dimen/small_media_icon_size"
+                android:layout_height="@dimen/small_media_icon_size"
+                android:layout_marginEnd="@dimen/marginSmall"
+                app:srcCompat="@drawable/mic" />
+
+        <TextView
+                android:id="@+id/nameTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/action_item_font"
+                android:layout_marginEnd="@dimen/marginSmall"
+                android:textColor="@color/basic_white" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/frameStuckSpinner"
-        android:layout_width="@dimen/button_size"
-        android:layout_height="@dimen/button_size"
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:indicatorColor="@color/loading_button"
-        android:layout_gravity="center"/>
+            android:id="@+id/frameStuckSpinner"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:indicatorColor="@color/loading_button"
+            android:layout_gravity="center" />
 
 </FrameLayout>

@@ -4,7 +4,6 @@
     <dimen name="marginSmall">10dp</dimen>
     <dimen name="marginMedium">24dp</dimen>
 
-
     <dimen name="marginTop">32dp</dimen>
     <dimen name="marginTopButton">48dp</dimen>
     <dimen name="marginBottom">14dp</dimen>

@@ -31,11 +31,13 @@ class FeatureAdapter(
                     resources.getDimension(R.dimen.feature_grid_top_margin_large).toInt()
                 params.bottomMargin = 0
             }
+
             itemCount - 1 -> {
                 params.topMargin = resources.getDimension(R.dimen.feature_grid_top_margin).toInt()
                 params.bottomMargin =
                     resources.getDimension(R.dimen.feature_grid_top_margin).toInt()
             }
+
             else -> {
                 params.topMargin = resources.getDimension(R.dimen.feature_grid_top_margin).toInt()
                 params.bottomMargin = 0

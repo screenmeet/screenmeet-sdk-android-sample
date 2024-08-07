@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.DialogPeopleBinding
-import com.screenmeet.live.util.NavigationDispatcher
+import com.screenmeet.live.tools.NavigationDispatcher
 import com.screenmeet.sdk.Participant
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.SessionEventListener

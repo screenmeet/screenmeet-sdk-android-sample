@@ -1,4 +1,4 @@
-package com.screenmeet.live.util
+package com.screenmeet.live.tools
 
 import android.content.Context
 import android.view.GestureDetector

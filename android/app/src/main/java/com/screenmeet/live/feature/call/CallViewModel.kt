@@ -4,7 +4,7 @@ import androidx.annotation.IdRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.screenmeet.live.R
-import com.screenmeet.live.util.NavigationDispatcher
+import com.screenmeet.live.tools.NavigationDispatcher
 import com.screenmeet.sdk.Participant
 import com.screenmeet.sdk.VideoElement
 import com.screenmeet.sdk.domain.entity.ChatMessage

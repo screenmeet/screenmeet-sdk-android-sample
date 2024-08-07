@@ -16,7 +16,7 @@ import com.screenmeet.live.MainActivity
 import com.screenmeet.live.R
 import com.screenmeet.live.SupportApplication
 import com.screenmeet.live.databinding.OverlayWidgetBinding
-import com.screenmeet.live.util.DoubleTapListener
+import com.screenmeet.live.tools.DoubleTapListener
 import com.screenmeet.sdk.ScreenMeet.Companion.eglContext
 import com.screenmeet.sdk.VideoElement
 import org.webrtc.RendererCommon
@@ -118,6 +118,26 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
 
     fun attachVideoTrack(videoElement: VideoElement) {
         binding?.apply {
+
+            if (nameTv.text != videoElement.userName) {
+                nameTv.text = videoElement.userName
+            }
+
+            if (videoElement.isAudioSharing) {
+                if (microButton.colorFilter != null){
+                    microButton.setImageResource(R.drawable.mic)
+                    microButton.backgroundTintList = null
+                    microButton.colorFilter = null
+                }
+            } else {
+                if (microButton.colorFilter == null) {
+                    val context = root.context
+                    microButton.setImageResource(R.drawable.mic_off)
+                    val color = ContextCompat.getColor(context, R.color.error_red)
+                    microButton.setColorFilter(color)
+                }
+            }
+
             val trackId = renderer.trackId
             if (trackId != null && trackId == videoElement.track?.id()) {
                 return
@@ -128,18 +148,6 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
                 layoutParams.width = widgetMaxSize
                 layoutParams.height = widgetMaxSize
                 windowManager.updateViewLayout(overlay, layoutParams)
-            }
-
-            nameTv.text = videoElement.userName
-            if (videoElement.isAudioSharing) {
-                microButton.setImageResource(R.drawable.mic)
-                microButton.backgroundTintList = null
-                microButton.colorFilter = null
-            } else {
-                val context = root.context
-                microButton.setImageResource(R.drawable.mic_off)
-                val color = ContextCompat.getColor(context, R.color.bright_red)
-                microButton.setColorFilter(color)
             }
 
             val videoTrack = videoElement.track

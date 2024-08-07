@@ -1,4 +1,4 @@
-package com.screenmeet.live.util
+package com.screenmeet.live.tools
 
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
@@ -29,12 +29,12 @@ fun <T> Fragment.getNavigationResult(
             navBackStackEntry.savedStateHandle.remove<T>(key)
         }
     }
-    navBackStackEntry.getLifecycle().addObserver(observer)
+    navBackStackEntry.lifecycle.addObserver(observer)
 
     viewLifecycleOwner.lifecycle.addObserver(
         LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_DESTROY) {
-                navBackStackEntry.getLifecycle().removeObserver(observer)
+                navBackStackEntry.lifecycle.removeObserver(observer)
             }
         }
     )
