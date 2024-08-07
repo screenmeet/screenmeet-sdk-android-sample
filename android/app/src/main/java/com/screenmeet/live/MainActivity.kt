@@ -2,7 +2,7 @@ package com.screenmeet.live
 
 import android.graphics.Color
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
@@ -17,14 +17,14 @@ import com.screenmeet.live.SupportApplication.Companion.startListeningForeground
 import com.screenmeet.live.SupportApplication.Companion.stopListeningForeground
 import com.screenmeet.live.SupportApplication.Companion.widgetManager
 import com.screenmeet.live.databinding.ActivityMainBinding
-import com.screenmeet.live.util.NavigationDispatcher
+import com.screenmeet.live.tools.NavigationDispatcher
+import com.screenmeet.live.tools.showAlert
 import com.screenmeet.sdk.Entitlement
 import com.screenmeet.sdk.Feature
 import com.screenmeet.sdk.Participant
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.SessionEventListener
 import com.screenmeet.sdk.VideoElement
-import com.screenmeet.sdk.util.LogsDebugListener
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
 import kotlinx.coroutines.launch
@@ -38,8 +38,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
-    private val logsListener = LogsDebugListener()
-
     @Inject
     lateinit var navigationDispatcher: NavigationDispatcher
 
@@ -47,14 +45,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        binding.disconnect.setOnClickListener {
-            showAlert(
-                dialogTittle = "Disconnect",
-                message = "Are you sure you want to disconnect?",
-                confirmed = ScreenMeet::disconnect
-            )
-        }
 
         applyEdgeToEdge()
         applyInsets()
@@ -160,6 +150,7 @@ class MainActivity : AppCompatActivity() {
                 Entitlement.LASER_POINTER -> binding.stopRemoteAssist.setImageResource(
                     R.drawable.ic_pointer
                 )
+
                 Entitlement.REMOTE_CONTROL -> binding.stopRemoteAssist.setImageResource(
                     R.drawable.ic_remote_control
                 )
@@ -170,19 +161,27 @@ class MainActivity : AppCompatActivity() {
             binding.stopRemoteAssist.isVisible = false
         }
 
-        override fun onLocalVideoStopped(source: ScreenMeet.VideoSource) = displayWidgetIfNeeded()
-
-        override fun onLocalVideoCreated(source: ScreenMeet.VideoSource, video: VideoElement) =
+        override fun onLocalVideoStopped(source: ScreenMeet.VideoSource) {
             displayWidgetIfNeeded()
-    }
+        }
 
-    private fun showAlert(dialogTittle: String, message: String, confirmed: () -> Unit) {
-        AlertDialog.Builder(this)
-            .setTitle(dialogTittle)
-            .setMessage(message)
-            .setPositiveButton("OK") { _, _ -> confirmed() }
-            .setNegativeButton("CANCEL", null)
-            .show()
+        override fun onLocalVideoCreated(source: ScreenMeet.VideoSource, video: VideoElement) {
+            displayWidgetIfNeeded()
+        }
+
+
+        override fun onScreenShareRequest(participant: Participant) {
+            SupportApplication.instance?.let { app ->
+                if (SupportApplication.inBackground) {
+                    Toast.makeText(app,
+                        getString(
+                            R.string.background_screenshare_request,
+                            participant.identity.name,
+                            app.getString(R.string.app_name)
+                        ), Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
     private fun displayWidgetIfNeeded() {
@@ -190,10 +189,10 @@ class MainActivity : AppCompatActivity() {
 
         val currentDestinationId = navController.currentDestination?.id
         val shouldHideWidget = currentDestinationId == R.id.fragmentConnect ||
-            currentDestinationId == R.id.fragmentVideoCall ||
-            currentDestinationId == R.id.fragmentChat ||
-            currentDestinationId == R.id.fragmentCallMore ||
-            currentDestinationId == R.id.fragmentPeople
+                currentDestinationId == R.id.fragmentVideoCall ||
+                currentDestinationId == R.id.fragmentChat ||
+                currentDestinationId == R.id.fragmentCallMore ||
+                currentDestinationId == R.id.fragmentPeople
 
         if (!shouldHideWidget || SupportApplication.inBackground) {
             var activeSpeaker = ScreenMeet.currentActiveSpeaker()
@@ -215,7 +214,7 @@ class MainActivity : AppCompatActivity() {
     private fun isOwnScreenShare(videoElement: VideoElement): Boolean {
         val localParticipant = ScreenMeet.localParticipant()
         return videoElement.participantId == localParticipant.id &&
-            videoElement.sourceType == ScreenMeet.VideoSource.Screen
+                videoElement.sourceType == ScreenMeet.VideoSource.Screen
     }
 
     private fun updateHeader() {
@@ -227,12 +226,14 @@ class MainActivity : AppCompatActivity() {
                 binding.statusView.setBackgroundColor(ContextCompat.getColor(this, R.color.yellow))
                 binding.connectionTv.text = getString(R.string.session_connecting)
             }
+
             is ScreenMeet.ConnectionState.Connected -> {
                 startListeningForeground()
                 binding.statusView.isVisible = true
                 binding.statusView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
                 binding.connectionTv.text = getString(R.string.session_connected)
             }
+
             is ScreenMeet.ConnectionState.Disconnected -> {
                 stopListeningForeground()
                 widgetManager.hideFloatingWidget()

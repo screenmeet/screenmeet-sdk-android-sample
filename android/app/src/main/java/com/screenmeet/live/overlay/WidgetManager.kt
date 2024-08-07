@@ -3,6 +3,7 @@ package com.screenmeet.live.overlay
 import android.content.Context
 import androidx.activity.ComponentActivity
 import com.screenmeet.sdk.VideoElement
+
 class WidgetManager(val context: Context) {
 
     private var videoOverlay: VideoOverlay? = null

@@ -8,21 +8,28 @@ import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.screenmeet.live.overlay.WidgetManager
 import com.screenmeet.live.service.ForegroundServiceConnection
+import com.screenmeet.live.tools.DataStoreManager
 import com.screenmeet.sdk.ScreenMeet
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
 
 @HiltAndroidApp
 class SupportApplication : Application() {
+
+    @Inject
+    lateinit var dataStore: DataStoreManager
 
     override fun onCreate() {
         super.onCreate()
         instance = this
         Firebase.crashlytics.setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+        val (endpoint, tag, apiKey) = runBlocking { dataStore.getConnectionPrefs() }
         // TODO Provide your API token below
-        val configuration = ScreenMeet.Configuration(BuildConfig.SM_API_KEY)
-        configuration.logLevel(ScreenMeet.Configuration.LogLevel.DEBUG)
+        val configuration = ScreenMeet.Configuration(apiKey ?: BuildConfig.SM_API_KEY)
+        configuration.urlEndpoint(endpoint)
+        configuration.serverTag(tag)
         ScreenMeet.init(this, configuration)
-        registerActivityLifecycleCallbacks(ScreenMeet.activityLifecycleCallback())
     }
 
     @Suppress("ktlint:experimental:property-naming")

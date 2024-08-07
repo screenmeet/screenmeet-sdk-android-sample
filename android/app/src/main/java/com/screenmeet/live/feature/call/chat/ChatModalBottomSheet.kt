@@ -66,7 +66,6 @@ class ChatModalBottomSheet : BottomSheetDialogFragment() {
                 binding.chatEt.text.clear()
             }
         }
-        displayMessages()
     }
 
     private fun displayMessages() {
@@ -83,6 +82,7 @@ class ChatModalBottomSheet : BottomSheetDialogFragment() {
 
     override fun onResume() {
         super.onResume()
+        displayMessages()
         ScreenMeet.registerEventListener(eventListener)
     }
 

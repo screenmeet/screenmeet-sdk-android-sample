@@ -13,7 +13,7 @@ import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.FragmentUiConfidentialityBinding
-import com.screenmeet.live.util.viewBinding
+import com.screenmeet.live.tools.viewBinding
 import com.screenmeet.sdk.ScreenMeet
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
@@ -101,6 +101,7 @@ class ConfidentialityFragment : Fragment(R.layout.fragment_ui_confidentiality) {
                     deltaY = motionEvent.y
                     mode = DragState.DRAG
                 }
+
                 MotionEvent.ACTION_POINTER_DOWN -> mode = DragState.ZOOM
                 MotionEvent.ACTION_MOVE -> if (mode == DragState.DRAG) {
                     when {
@@ -108,16 +109,19 @@ class ConfidentialityFragment : Fragment(R.layout.fragment_ui_confidentiality) {
                             draggable.x = rightMargin.toFloat()
                             draggable.y = draggable.y
                         }
+
                         draggable.x + motionEvent.x - deltaX < leftMargin -> {
                             draggable.x = leftMargin.toFloat()
                             draggable.y = draggable.y
                         }
+
                         else -> {
                             draggable.x = draggable.x + motionEvent.x - deltaX
                             draggable.y = draggable.y
                         }
                     }
                 }
+
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> mode = DragState.NONE
             }
             view.performClick()

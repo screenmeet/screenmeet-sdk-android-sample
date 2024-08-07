@@ -6,7 +6,7 @@ import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.FragmentWebviewConfidentialityBinding
-import com.screenmeet.live.util.viewBinding
+import com.screenmeet.live.tools.viewBinding
 import com.screenmeet.sdk.ScreenMeet
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter

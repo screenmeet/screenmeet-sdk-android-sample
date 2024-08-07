@@ -1,11 +1,18 @@
 package com.screenmeet.live.feature.call
 
+import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -18,14 +25,14 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.FragmentCallBinding
-import com.screenmeet.live.util.NAVIGATION_DESTINATION
-import com.screenmeet.live.util.ParticipantsGridItemDecoration
-import com.screenmeet.live.util.ParticipantsHorizontalItemDecoration
-import com.screenmeet.live.util.getNavigationResult
-import com.screenmeet.live.util.setButtonBackgroundColor
-import com.screenmeet.live.util.tryOrNull
-import com.screenmeet.live.util.viewBinding
-import com.screenmeet.sdk.Feature
+import com.screenmeet.live.tools.NAVIGATION_DESTINATION
+import com.screenmeet.live.tools.ParticipantsGridItemDecoration
+import com.screenmeet.live.tools.ParticipantsHorizontalItemDecoration
+import com.screenmeet.live.tools.getNavigationResult
+import com.screenmeet.live.tools.setButtonBackgroundColor
+import com.screenmeet.live.tools.showAlert
+import com.screenmeet.live.tools.tryOrNull
+import com.screenmeet.live.tools.viewBinding
 import com.screenmeet.sdk.Participant
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.ScreenMeet.VideoSource
@@ -43,6 +50,8 @@ class CallFragment : Fragment(R.layout.fragment_call) {
 
     private val binding by viewBinding(FragmentCallBinding::bind)
     private val viewModel by viewModels<CallViewModel>()
+
+    private var notificationsPermissionLauncher: ActivityResultLauncher<String>? = null
 
     private lateinit var participantsAdapter: ParticipantsAdapter
     private lateinit var eglBase: EglBase.Context
@@ -94,7 +103,26 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                 viewModel.navigate(it)
             }
         }
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (!hasNotificationPermission(binding.root.context)) {
+                val contract = ActivityResultContracts.RequestPermission()
+                notificationsPermissionLauncher = registerForActivityResult(contract) {
+                    notificationsPermissionLauncher = null
+                }
+                notificationsPermissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
+
+    @RequiresApi(33)
+    private fun hasNotificationPermission(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
 
     private fun setUpView() {
         eglBase = ScreenMeet.eglContext!!
@@ -148,9 +176,13 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                 viewModel.openMore()
             }
 
-            hangUp.setButtonBackgroundColor(R.color.bright_red)
+            hangUp.setButtonBackgroundColor(R.color.error_red)
             hangUp.setOnClickListener {
-                ScreenMeet.disconnect()
+                requireActivity().showAlert(
+                    dialogTittle = "Disconnect",
+                    message = "Are you sure you want to disconnect?",
+                    confirmed = ScreenMeet::disconnect
+                )
             }
 
             val openControlsListener: (v: View) -> Unit = {
@@ -184,7 +216,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             val isGridLayout = participantsRecycler.layoutManager is GridLayoutManager
             val isLinearLayout = participantsRecycler.layoutManager is LinearLayoutManager
             val needsNewLayout = participantsRecycler.layoutManager == null ||
-                !hasActiveStream && isLinearLayout || hasActiveStream && isGridLayout
+                    !hasActiveStream && isLinearLayout || hasActiveStream && isGridLayout
 
             activeStreamRenderer.root.isVisible = hasActiveStream
             if (needsNewLayout) {
@@ -223,7 +255,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                 activeStreamRenderer.microButton.colorFilter = null
             } else {
                 activeStreamRenderer.microButton.setImageResource(R.drawable.mic_off)
-                val color = ContextCompat.getColor(context, R.color.bright_red)
+                val color = ContextCompat.getColor(context, R.color.error_red)
                 activeStreamRenderer.microButton.setColorFilter(color)
             }
         }
@@ -335,10 +367,16 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             }
         }
 
-        override fun onFeatureRequest(
-            feature: Feature,
-            decisionHandler: (granted: Boolean) -> Unit
-        ) {
+        override fun onScreenShareRequest(participant: Participant) {
+            val context = requireActivity()
+            context.showAlert(
+                dialogTittle = context.getString(R.string.screenshare_request),
+                message = context.getString(
+                    R.string.screenshare_request_hint,
+                    participant.identity.name
+                ),
+                confirmed = ScreenMeet::shareScreen
+            )
         }
     }
 

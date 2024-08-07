@@ -1,94 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:backgroundTint="@color/dark_grey"
-    android:background="@drawable/background_rounded_view">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:backgroundTint="@color/dark_grey"
+        android:background="@drawable/background_rounded_view">
 
     <com.screenmeet.live.feature.call.VideoView
-        android:id="@+id/renderer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/marginSmallest"
-        android:layout_gravity="center"
-        android:visibility="gone"/>
+            android:id="@+id/renderer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/marginSmallest"
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
     <com.otaliastudios.zoom.ZoomLayout
-        android:id="@+id/zoomContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:transformation="centerInside"
-        app:alignment="center"
-        app:overScrollHorizontal="true"
-        app:overScrollVertical="false"
-        app:overPinchable="false"
-        app:zoomEnabled="true"
-        app:scrollEnabled="true"
-        app:oneFingerScrollEnabled="true"
-        app:minZoom="0.5"
-        app:maxZoom="0.98"
-        app:minZoomType="zoom"
-        app:maxZoomType="zoom"
-        app:animationDuration="280"
-        app:hasClickableChildren="true"
-        android:visibility="gone">
+            android:id="@+id/zoomContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:transformation="centerInside"
+            app:alignment="center"
+            app:overScrollHorizontal="true"
+            app:overScrollVertical="false"
+            app:overPinchable="false"
+            app:zoomEnabled="true"
+            app:scrollEnabled="true"
+            app:oneFingerScrollEnabled="true"
+            app:minZoom="0.5"
+            app:maxZoom="0.98"
+            app:minZoomType="zoom"
+            app:maxZoomType="zoom"
+            app:animationDuration="280"
+            app:hasClickableChildren="true"
+            android:visibility="gone">
 
         <com.screenmeet.live.feature.call.VideoView
-            android:id="@+id/zoomRenderer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+                android:id="@+id/zoomRenderer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
     </com.otaliastudios.zoom.ZoomLayout>
 
     <ImageView
-        android:id="@+id/pinButton"
-        android:layout_width="@dimen/small_media_icon_size"
-        android:layout_height="@dimen/small_media_icon_size"
-        android:layout_margin="@dimen/marginSmall"
-        android:layout_gravity="top|end"
-        app:srcCompat="@drawable/ic_pin" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/logo"
-        android:layout_width="@dimen/item_logo"
-        android:layout_height="@dimen/item_logo"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_logo"/>
-
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="start|bottom"
-        android:gravity="start|center_vertical"
-        android:background="@color/darker_grey"
-        android:padding="@dimen/marginSmallest">
-
-        <ImageView
-            android:id="@+id/microButton"
+            android:id="@+id/pinButton"
             android:layout_width="@dimen/small_media_icon_size"
             android:layout_height="@dimen/small_media_icon_size"
-            android:layout_marginEnd="@dimen/marginSmall"
-            app:srcCompat="@drawable/mic" />
+            android:layout_margin="@dimen/marginSmall"
+            android:layout_gravity="top|end"
+            app:srcCompat="@drawable/ic_pin" />
 
-        <TextView
-            android:id="@+id/nameTv"
+    <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/logo"
+            android:layout_width="@dimen/item_logo"
+            android:layout_height="@dimen/item_logo"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_logo" />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/action_item_font"
-            android:layout_marginEnd="@dimen/marginSmall"
-            android:textColor="@color/basic_white"/>
+            android:orientation="horizontal"
+            android:layout_gravity="start|bottom"
+            android:gravity="start|center_vertical"
+            android:background="@color/darker_grey"
+            android:padding="@dimen/marginSmallest">
+
+        <ImageView
+                android:id="@+id/microButton"
+                android:layout_width="@dimen/small_media_icon_size"
+                android:layout_height="@dimen/small_media_icon_size"
+                android:layout_marginEnd="@dimen/marginSmall"
+                app:srcCompat="@drawable/mic" />
+
+        <TextView
+                android:id="@+id/nameTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/action_item_font"
+                android:layout_marginEnd="@dimen/marginSmall"
+                android:textColor="@color/basic_white" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/frameStuckSpinner"
-        android:layout_width="@dimen/button_size"
-        android:layout_height="@dimen/button_size"
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:indicatorColor="@color/loading_button"
-        android:layout_gravity="center"/>
+            android:id="@+id/frameStuckSpinner"
+            android:layout_width="@dimen/button_size"
+            android:layout_height="@dimen/button_size"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:indicatorColor="@color/loading_button"
+            android:layout_gravity="center" />
 
 </FrameLayout>

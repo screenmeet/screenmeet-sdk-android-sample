@@ -1,4 +1,4 @@
-package com.screenmeet.live.util
+package com.screenmeet.live.tools
 
 import androidx.navigation.NavController
 import dagger.hilt.android.scopes.ActivityRetainedScoped

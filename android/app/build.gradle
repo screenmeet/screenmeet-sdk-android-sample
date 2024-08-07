@@ -11,14 +11,14 @@ plugins {
 
 android {
     namespace "com.screenmeet.live"
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.screenmeet.live"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 30
-        versionName "3.0.7"
+        versionCode 37
+        versionName "3.0.12"
 
         ndk {
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
@@ -31,6 +31,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     buildTypes {
@@ -63,6 +64,7 @@ ktlint {
     outputColorName.set("RED")
     ignoreFailures.set(false)
     enableExperimentalRules.set(true)
+    //noinspection GrDeprecatedAPIUsage
     disabledRules.set(["no-wildcard-imports", "import-ordering"])
     filter {
         exclude("**/generated/**")
@@ -71,32 +73,33 @@ ktlint {
 }
 
 dependencies {
-    implementation ("com.screenmeet:sdk:${screenmeetVersion}")
+    implementation("com.screenmeet:sdk:${screenmeetVersion}")
     if (Boolean.parseBoolean(includeFlutter)) implementation project(path: ':flutter_demo')
     if (Boolean.parseBoolean(includeReactNative)) implementation project(path: ':react_demo')
 
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.22")
+    implementation('org.jetbrains.kotlin:kotlin-reflect:1.9.0')
 
-    implementation "androidx.core:core-ktx:1.9.0"
+    implementation "androidx.core:core-ktx:1.10.1"
     implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "androidx.activity:activity-ktx:1.6.1"
-    implementation "androidx.fragment:fragment-ktx:1.5.5"
-    implementation "androidx.navigation:navigation-fragment-ktx:2.5.3"
+    implementation "androidx.activity:activity-ktx:1.7.2"
+    implementation "androidx.fragment:fragment-ktx:1.6.1"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.1"
 
-    implementation 'androidx.recyclerview:recyclerview:1.3.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.1'
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
 
-    implementation "com.google.android.material:material:1.8.0"
+    implementation "com.google.android.material:material:1.9.0"
 
-    implementation "com.google.dagger:hilt-android:2.44"
-    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.3.5'
-    implementation 'com.google.firebase:firebase-analytics-ktx:21.2.0'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.4.1'
+    implementation 'com.google.firebase:firebase-analytics-ktx:21.3.0'
 
-    kapt "com.google.dagger:hilt-compiler:2.44"
+    kapt "com.google.dagger:hilt-compiler:2.47"
+    implementation "com.google.dagger:hilt-android:2.47"
     implementation "androidx.hilt:hilt-navigation:1.0.0"
 
     implementation "com.otaliastudios:zoomlayout:1.9.0"
@@ -104,7 +107,7 @@ dependencies {
     //noinspection GradleDependency
     implementation 'com.github.mukeshsolanki:android-otpview-pinview:2.1.2'
 
-    implementation "dev.chrisbanes.insetter:insetter:0.6.0"
+    implementation 'dev.chrisbanes.insetter:insetter:0.6.1'
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core-ktx:1.5.0")

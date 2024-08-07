@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/featureRecycler"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="@dimen/marginSmall"
-        android:layout_marginEnd="@dimen/marginSmall"
-        android:overScrollMode="never" />
+            android:id="@+id/featureRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/marginSmall"
+            android:layout_marginEnd="@dimen/marginSmall"
+            android:overScrollMode="never" />
 
     <View
-        android:id="@+id/mockView"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="@dimen/marginSmall" />
+            android:id="@+id/mockView"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="@dimen/marginSmall" />
 
 </FrameLayout>

@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.DialogMoreBinding
-import com.screenmeet.live.util.NAVIGATION_DESTINATION
-import com.screenmeet.live.util.NavigationDispatcher
+import com.screenmeet.live.tools.NAVIGATION_DESTINATION
+import com.screenmeet.live.tools.NavigationDispatcher
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.ScreenMeet.VideoSource
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,10 +60,17 @@ class MoreBottomSheet : BottomSheetDialogFragment() {
         }
         items.add(backCamItem)
 
-        val screenItem = if (mediaState.isScreenSharing) {
+        val fullScreenItem = if (mediaState.isFullScreenSharing) {
             MoreActionItem(R.string.share_screen_stop, R.drawable.ic_video_camera_off)
         } else {
             MoreActionItem(R.string.share_screen, R.drawable.screen_share)
+        }
+        items.add(fullScreenItem)
+
+        val screenItem = if (mediaState.isScreenSharing) {
+            MoreActionItem(R.string.share_app_stop, R.drawable.ic_video_camera_off)
+        } else {
+            MoreActionItem(R.string.share_app, R.drawable.screen_share)
         }
         items.add(screenItem)
 
@@ -97,8 +104,10 @@ class MoreBottomSheet : BottomSheetDialogFragment() {
 
     private fun handleActionClick(item: MoreActionItem) {
         when (item.text) {
-            R.string.share_screen -> ScreenMeet.shareScreen()
-            R.string.share_screen_stop -> ScreenMeet.stopVideoSharing(VideoSource.Screen)
+            R.string.share_app -> ScreenMeet.shareScreen()
+            R.string.share_app_stop -> ScreenMeet.stopVideoSharing(VideoSource.Screen)
+            R.string.share_screen -> ScreenMeet.shareFullScreen()
+            R.string.share_screen_stop -> ScreenMeet.stopVideoSharing(VideoSource.FullScreen())
             R.string.share_cam_front -> ScreenMeet.shareCamera(true)
             R.string.share_cam_front_stop -> ScreenMeet.stopVideoSharing(VideoSource.FrontCamera)
             R.string.share_cam_back -> ScreenMeet.shareCamera(false)

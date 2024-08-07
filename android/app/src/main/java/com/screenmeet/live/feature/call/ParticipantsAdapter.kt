@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.LayoutParticipantBinding
-import com.screenmeet.live.util.DoubleTapListener
+import com.screenmeet.live.tools.DoubleTapListener
 import com.screenmeet.sdk.VideoElement
 import kotlinx.coroutines.CoroutineScope
 import org.webrtc.EglBase
@@ -97,7 +97,7 @@ class ParticipantsAdapter(
                 } else {
                     val context = root.context
                     microButton.setImageResource(R.drawable.mic_off)
-                    val color = ContextCompat.getColor(context, R.color.bright_red)
+                    val color = ContextCompat.getColor(context, R.color.error_red)
                     microButton.setColorFilter(color)
                 }
             }

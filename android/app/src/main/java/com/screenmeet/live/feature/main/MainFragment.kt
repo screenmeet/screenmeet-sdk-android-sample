@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.screenmeet.live.R
 import com.screenmeet.live.databinding.FragmentMainBinding
-import com.screenmeet.live.util.NavigationDispatcher
-import com.screenmeet.live.util.viewBinding
+import com.screenmeet.live.tools.NavigationDispatcher
+import com.screenmeet.live.tools.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
 import javax.inject.Inject
@@ -41,6 +41,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
                     }
                 }
+
                 else -> navigationDispatcher.emit { it.navigate(feature.second) }
             }
         }

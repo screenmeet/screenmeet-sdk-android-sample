@@ -2,8 +2,8 @@ rootProject.name = "ScreenMeet Live"
 include ':app'
 loadProps()
 
-def loadProps(){
-    if(Boolean.parseBoolean(includeFlutter)){
+def loadProps() {
+    if (Boolean.parseBoolean(includeFlutter)) {
         include ':flutter_demo'
         include ':flutter_module'
         setBinding(new Binding([gradle: this]))
@@ -12,7 +12,7 @@ def loadProps(){
                 'flutter_module/.android/include_flutter.groovy'
         ))
     }
-    if(Boolean.parseBoolean(includeReactNative)){
+    if (Boolean.parseBoolean(includeReactNative)) {
         include ':react_demo'
         apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
         applyNativeModulesSettingsGradle(settings)
