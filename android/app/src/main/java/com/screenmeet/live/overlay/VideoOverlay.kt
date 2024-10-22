@@ -118,13 +118,12 @@ class VideoOverlay(context: Context) : BaseOverlay(context) {
 
     fun attachVideoTrack(videoElement: VideoElement) {
         binding?.apply {
-
             if (nameTv.text != videoElement.userName) {
                 nameTv.text = videoElement.userName
             }
 
             if (videoElement.isAudioSharing) {
-                if (microButton.colorFilter != null){
+                if (microButton.colorFilter != null) {
                     microButton.setImageResource(R.drawable.mic)
                     microButton.backgroundTintList = null
                     microButton.colorFilter = null

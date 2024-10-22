@@ -7,13 +7,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.screenmeet.live.R
 
-fun <T : Any> tryOrNull(body: () -> T?): T? {
-    return try {
-        body()
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
+fun <T : Any> tryOrNull(body: () -> T?): T? = try {
+    body()
+} catch (e: Exception) {
+    e.printStackTrace()
+    null
 }
 fun Context.showAlert(dialogTittle: String, message: String, confirmed: () -> Unit) {
     AlertDialog.Builder(this, R.style.RoundedDialog)

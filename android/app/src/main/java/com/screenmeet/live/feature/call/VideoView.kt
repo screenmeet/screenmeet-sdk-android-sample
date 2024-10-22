@@ -18,7 +18,7 @@ typealias onFramesStuck = (Boolean) -> Unit
 
 class VideoView : SurfaceViewRenderer {
 
-    private val stuckThresholdNs = 5000000000L // 5sec
+    private val stuckThresholdNs = 5_000_000_000L // 5 sec
 
     private lateinit var egl: EglBase.Context
     private var rendererEvents: RendererCommon.RendererEvents? = null
@@ -38,7 +38,6 @@ class VideoView : SurfaceViewRenderer {
     override fun init(eglContext: EglBase.Context, events: RendererCommon.RendererEvents?) {
         egl = eglContext
         rendererEvents = events
-        setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
     }
 
     fun render(track: VideoTrack?) {
@@ -104,7 +103,7 @@ class VideoView : SurfaceViewRenderer {
         }
     }
 
-    private val frameTrackingSink = VideoSink { videoFrame: VideoFrame ->
+    private val frameTrackingSink = VideoSink { videoFrame ->
         lastFrameNs = videoFrame.timestampNs
         this@VideoView.onFrame(videoFrame)
     }

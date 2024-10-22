@@ -13,23 +13,22 @@ import com.screenmeet.live.databinding.ItemChatMessageBinding
 import com.screenmeet.sdk.domain.entity.ChatMessage
 
 class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.ViewHolder>(ChatMessageComparator()) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(
-            ItemChatMessageBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
+        ItemChatMessageBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
         )
-    }
+    )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class ViewHolder(private val binding: ItemChatMessageBinding) : RecyclerView.ViewHolder(
-        binding.root
-    ) {
+    class ViewHolder(private val binding: ItemChatMessageBinding) :
+        RecyclerView.ViewHolder(
+            binding.root
+        ) {
         fun bind(chatMessage: ChatMessage) {
             binding.messageText.text = chatMessage.message
             binding.senderName.text = chatMessage.from.name
@@ -55,12 +54,10 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.ViewHolder>(ChatMessage
     }
 
     internal class ChatMessageComparator : DiffUtil.ItemCallback<ChatMessage>() {
-        override fun areItemsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {
-            return oldItem.id == newItem.id || oldItem.transferId == newItem.transferId
-        }
+        override fun areItemsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean =
+            oldItem.id == newItem.id || oldItem.transferId == newItem.transferId
 
-        override fun areContentsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean =
+            oldItem == newItem
     }
 }

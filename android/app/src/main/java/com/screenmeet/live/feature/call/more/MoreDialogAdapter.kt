@@ -9,9 +9,8 @@ import com.screenmeet.live.databinding.ItemMoreActionBinding
 
 typealias ActionClick = (MoreActionItem) -> Unit
 
-class MoreDialogAdapter(
-    private val clickListener: ActionClick
-) : ListAdapter<MoreActionItem, MoreDialogAdapter.ViewHolder>(ItemsComparator()) {
+class MoreDialogAdapter(private val clickListener: ActionClick) :
+    ListAdapter<MoreActionItem, MoreDialogAdapter.ViewHolder>(ItemsComparator()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context
@@ -37,12 +36,10 @@ class MoreDialogAdapter(
     }
 
     internal class ItemsComparator : DiffUtil.ItemCallback<MoreActionItem>() {
-        override fun areItemsTheSame(oldItem: MoreActionItem, newItem: MoreActionItem): Boolean {
-            return oldItem.text == newItem.text
-        }
+        override fun areItemsTheSame(oldItem: MoreActionItem, newItem: MoreActionItem): Boolean =
+            oldItem.text == newItem.text
 
-        override fun areContentsTheSame(oldItem: MoreActionItem, newItem: MoreActionItem): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: MoreActionItem, newItem: MoreActionItem): Boolean =
+            oldItem == newItem
     }
 }

@@ -23,7 +23,7 @@ class SupportApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        Firebase.crashlytics.setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+        Firebase.crashlytics.isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
         val (endpoint, tag, apiKey) = runBlocking { dataStore.getConnectionPrefs() }
         // TODO Provide your API token below
         val configuration = ScreenMeet.Configuration(apiKey ?: BuildConfig.SM_API_KEY)
@@ -32,7 +32,7 @@ class SupportApplication : Application() {
         ScreenMeet.init(this, configuration)
     }
 
-    @Suppress("ktlint:experimental:property-naming")
+    @Suppress("ktlint:standard:property-naming")
     companion object {
 
         @JvmField

@@ -73,19 +73,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         return features.toList()
     }
 
-    private fun react(): Class<*>? {
-        return try {
-            Class.forName("com.xps.react.demo.ReactNativeActivity")
-        } catch (e: ClassNotFoundException) {
-            null
-        }
+    private fun react(): Class<*>? = try {
+        Class.forName("com.xps.react.demo.ReactNativeActivity")
+    } catch (e: ClassNotFoundException) {
+        null
     }
 
-    private fun flutter(): Class<*>? {
-        return try {
-            Class.forName("com.xps.flutter.demo.FlutterProvider")
-        } catch (e: ClassNotFoundException) {
-            null
-        }
+    private fun flutter(): Class<*>? = try {
+        Class.forName("com.xps.flutter.demo.FlutterProvider")
+    } catch (e: ClassNotFoundException) {
+        null
     }
 }

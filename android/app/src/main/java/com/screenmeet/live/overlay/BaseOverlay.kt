@@ -85,7 +85,7 @@ abstract class BaseOverlay(val context: Context) {
     }
 
     private fun getOverlayFlagsTouch() = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 
     @Suppress("Deprecation")
     private fun getOverlayType(): Int {
@@ -172,13 +172,11 @@ abstract class BaseOverlay(val context: Context) {
         }
     }
 
-    private fun isViewAttached(view: View?): Boolean {
-        return view != null && view.parent != null
-    }
+    private fun isViewAttached(view: View?): Boolean = view != null && view.parent != null
 
-    private fun windowManager(): WindowManager {
-        return context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    }
+    private fun windowManager(): WindowManager = context.getSystemService(
+        Context.WINDOW_SERVICE
+    ) as WindowManager
 
     private val callback = object : ComponentCallbacks {
         override fun onConfigurationChanged(newConfig: Configuration) {

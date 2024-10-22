@@ -3,6 +3,7 @@ package com.screenmeet.live.feature.call
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
@@ -14,6 +15,7 @@ import com.screenmeet.live.tools.DoubleTapListener
 import com.screenmeet.sdk.VideoElement
 import kotlinx.coroutines.CoroutineScope
 import org.webrtc.EglBase
+import org.webrtc.RendererCommon
 
 typealias PinClick = (VideoElement) -> Unit
 
@@ -32,8 +34,57 @@ class ParticipantsAdapter(
         val inflater = LayoutInflater.from(context)
         recyclerSize = parent.measuredWidth
         val binding = LayoutParticipantBinding.inflate(inflater)
-        binding.renderer.init(eglBase, null)
+        binding.renderer.init(
+            eglBase,
+            object : RendererCommon.RendererEvents {
+                override fun onFrameResolutionChanged(
+                    videoWidth: Int,
+                    videoHeight: Int,
+                    rotation: Int
+                ) {
+                    binding.renderer.post {
+                        binding.renderer.layoutParams = fitFrame(
+                            videoWidth,
+                            videoHeight,
+                            binding.root.width,
+                            binding.root.height
+                        )
+                    }
+                }
+
+                override fun onFirstFrameRendered() {
+                }
+            }
+        )
         return ViewHolder(binding)
+    }
+
+    private fun fitFrame(
+        videoWidth: Int,
+        videoHeight: Int,
+        containerWidth: Int,
+        containerHeight: Int
+    ): FrameLayout.LayoutParams {
+        val videoAspect = videoWidth.toFloat() / videoHeight
+        val containerAspect = containerWidth.toFloat() / containerHeight
+
+        val newWidth: Int
+        val newHeight: Int
+
+        if (videoAspect > containerAspect) {
+            newWidth = containerWidth
+            newHeight = (containerWidth / videoAspect).toInt()
+        } else {
+            newHeight = containerHeight
+            newWidth = (containerHeight * videoAspect).toInt()
+        }
+
+        val offsetX = (containerWidth - newWidth) / 2
+        val offsetY = (containerHeight - newHeight) / 2
+
+        return FrameLayout.LayoutParams(newWidth, newHeight).apply {
+            setMargins(offsetX, offsetY, 0, 0)
+        }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -53,9 +104,8 @@ class ParticipantsAdapter(
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    class ViewHolder(
-        val binding: LayoutParticipantBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(val binding: LayoutParticipantBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(scope: CoroutineScope, video: VideoElement, recyclerSize: Int, onClick: PinClick) {
             binding.apply {
@@ -109,12 +159,10 @@ class ParticipantsAdapter(
     }
 
     internal class UiVideoComparator : DiffUtil.ItemCallback<VideoElement>() {
-        override fun areItemsTheSame(oldItem: VideoElement, newItem: VideoElement): Boolean {
-            return oldItem.id == newItem.id
-        }
+        override fun areItemsTheSame(oldItem: VideoElement, newItem: VideoElement): Boolean =
+            oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: VideoElement, newItem: VideoElement): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: VideoElement, newItem: VideoElement): Boolean =
+            oldItem == newItem
     }
 }

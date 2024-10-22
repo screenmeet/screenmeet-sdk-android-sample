@@ -5,6 +5,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -39,6 +40,7 @@ import com.screenmeet.sdk.ScreenMeet.VideoSource
 import com.screenmeet.sdk.SessionEventListener
 import com.screenmeet.sdk.VideoElement
 import com.screenmeet.sdk.domain.entity.ChatMessage
+import com.screenmeet.sdk.RemoteControlCommand
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
 import kotlinx.coroutines.launch
@@ -51,10 +53,12 @@ class CallFragment : Fragment(R.layout.fragment_call) {
     private val binding by viewBinding(FragmentCallBinding::bind)
     private val viewModel by viewModels<CallViewModel>()
 
+    private var areaNotClickableRemotely: Rect? = null
+
     private var notificationsPermissionLauncher: ActivityResultLauncher<String>? = null
 
-    private lateinit var participantsAdapter: ParticipantsAdapter
     private lateinit var eglBase: EglBase.Context
+    private lateinit var participantsAdapter: ParticipantsAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -123,7 +127,6 @@ class CallFragment : Fragment(R.layout.fragment_call) {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-
     private fun setUpView() {
         eglBase = ScreenMeet.eglContext!!
         binding.apply {
@@ -151,13 +154,13 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                     override fun onFirstFrameRendered() {}
 
                     override fun onFrameResolutionChanged(width: Int, height: Int, i2: Int) {
-                        Handler(Looper.getMainLooper()).post {
-                            activeStreamRenderer.zoomRenderer.let {
-                                val layoutParams = it.layoutParams
+                        activeStreamRenderer.zoomRenderer.let { renderer ->
+                            renderer.post {
+                                val layoutParams = renderer.layoutParams
                                 layoutParams.width = width
                                 layoutParams.height = height
                                 activeStreamRenderer.zoomContainer.updateViewLayout(
-                                    it,
+                                    renderer,
                                     layoutParams
                                 )
                                 if (width > 0 && height > 0) {
@@ -216,7 +219,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             val isGridLayout = participantsRecycler.layoutManager is GridLayoutManager
             val isLinearLayout = participantsRecycler.layoutManager is LinearLayoutManager
             val needsNewLayout = participantsRecycler.layoutManager == null ||
-                    !hasActiveStream && isLinearLayout || hasActiveStream && isGridLayout
+                !hasActiveStream && isLinearLayout || hasActiveStream && isGridLayout
 
             activeStreamRenderer.root.isVisible = hasActiveStream
             if (needsNewLayout) {
@@ -262,13 +265,19 @@ class CallFragment : Fragment(R.layout.fragment_call) {
     }
 
     private fun showControls() {
-        binding.buttonsContainer.visibility = View.VISIBLE
+        binding.buttonsContainer.isVisible = true
         binding.buttonsContainer.alpha = 0.0f
 
         binding.buttonsContainer.animate()
             .translationY(0f)
             .alpha(1.0f)
-            .setListener(null)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    val rect = Rect(0, 0, 0, 0)
+                    binding.hangUp.getGlobalVisibleRect(rect)
+                    areaNotClickableRemotely = rect
+                }
+            })
     }
 
     private fun hideControls() {
@@ -276,16 +285,16 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             .translationY(binding.buttonsContainer.height.toFloat())
             .alpha(0.0f)
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator, isReverse: Boolean) {
-                    binding.buttonsContainer.visibility = View.GONE
+                override fun onAnimationEnd(animation: Animator) {
+                    areaNotClickableRemotely = null
                 }
             })
     }
 
     private fun playChat() {
-        binding.buttonsContainer.visibility = View.VISIBLE
+        binding.buttonsContainer.isVisible = true
         binding.buttonsContainer.alpha = 0.0f
-        binding.hangUp.visibility = View.INVISIBLE
+        binding.hangUp.isVisible = false
         binding.buttonsContainer.animate()
             .translationY(0f)
             .alpha(1.0f)
@@ -296,8 +305,8 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                         .alpha(0.0f)
                         .setListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationEnd(animation: Animator) {
-                                binding.hangUp.visibility = View.VISIBLE
-                                binding.buttonsContainer.visibility = View.GONE
+                                binding.hangUp.isVisible = true
+                                binding.buttonsContainer.isVisible = false
                             }
                         })
                 }
@@ -367,7 +376,7 @@ class CallFragment : Fragment(R.layout.fragment_call) {
             }
         }
 
-        override fun onScreenShareRequest(participant: Participant) {
+        override fun onScreenShareRequest(participant: Participant): Boolean {
             val context = requireActivity()
             context.showAlert(
                 dialogTittle = context.getString(R.string.screenshare_request),
@@ -377,6 +386,16 @@ class CallFragment : Fragment(R.layout.fragment_call) {
                 ),
                 confirmed = ScreenMeet::shareScreen
             )
+            return true
+        }
+
+        override fun onRemoteControlCommand(command: RemoteControlCommand): Boolean {
+            if (command is RemoteControlCommand.Mouse) {
+                // If the click occurs in a non-clickable area, return true.
+                // This indicates that the event has been handled and should not be further dispatched.
+                return areaNotClickableRemotely?.contains(command.x, command.y) == true
+            }
+            return false
         }
     }
 

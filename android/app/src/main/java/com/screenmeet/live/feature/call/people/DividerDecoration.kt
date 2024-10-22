@@ -4,9 +4,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import androidx.recyclerview.widget.RecyclerView
 
-class DividerDecoration(
-    val divider: Drawable
-) : RecyclerView.ItemDecoration() {
+class DividerDecoration(private val divider: Drawable) : RecyclerView.ItemDecoration() {
 
     override fun onDrawOver(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         val dividerLeft = parent.paddingLeft

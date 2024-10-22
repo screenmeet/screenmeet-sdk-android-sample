@@ -1,0 +1,78 @@
+[versions]
+firebase-crashlytics-gradle = "3.0.2"
+google-services = "4.4.2"
+gradle = "8.7.0"
+kotlin = "1.9.23"
+androidx-core = "1.13.1"
+androidx-appcompat = "1.7.0"
+androidx-activity = "1.9.2"
+androidx-fragment = "1.8.4"
+androidx-navigation = "2.8.2"
+androidx-recyclerview = "1.3.2"
+androidx-constraintlayout = "2.1.4"
+androidx-coordinatorlayout = "1.2.0"
+androidx-datastore = "1.1.1"
+androidx-lifecycle = "2.8.6"
+androidx-hilt = "1.2.0"
+material = "1.12.0"
+firebase-crashlytics = "19.2.0"
+firebase-analytics = "22.1.2"
+dagger-hilt = "2.52"
+zoomlayout = "1.9.0"
+otpview-pinview = "2.1.2"
+insetter = "0.6.1"
+junit = "4.13.2"
+androidx-test-core = "1.6.1"
+androidx-test-ext-junit = "1.2.1"
+androidx-espresso = "3.6.1"
+screenmeet-sdk = "3.0.11"
+
+[libraries]
+firebase-crashlytics-gradle = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebase-crashlytics-gradle" }
+google-services = { module = "com.google.gms:google-services", version.ref = "google-services" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "dagger-hilt" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity" }
+androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidx-fragment" }
+androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidx-navigation" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerview" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidx-constraintlayout" }
+androidx-coordinatorlayout = { module = "androidx.coordinatorlayout:coordinatorlayout", version.ref = "androidx-coordinatorlayout" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
+androidx-hilt-navigation = { module = "androidx.hilt:hilt-navigation", version.ref = "androidx-hilt" }
+
+material = { module = "com.google.android.material:material", version.ref = "material" }
+
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebase-crashlytics" }
+firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version.ref = "firebase-analytics" }
+
+dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger-hilt" }
+dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger-hilt" }
+
+zoomlayout = { module = "com.otaliastudios:zoomlayout", version.ref = "zoomlayout" }
+otpview-pinview = { module = "com.github.mukeshsolanki:android-otpview-pinview", version.ref = "otpview-pinview" }
+insetter = { module = "dev.chrisbanes.insetter:insetter", version.ref = "insetter" }
+
+junit = { module = "junit:junit", version.ref = "junit" }
+androidx-test-core-ktx = { module = "androidx.test:core-ktx", version.ref = "androidx-test-core" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
+androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
+
+screenmeet-sdk = { module = "com.screenmeet:sdk", version.ref = "screenmeet-sdk" }
+
+[plugins]
+kotlin-kapt = { id = "kotlin-kapt" }
+kotlin-android = { id = "kotlin-android" }
+android-application = { id = "com.android.application" }
+dagger-hilt-plugin = { id = "dagger.hilt.android.plugin" }
+google-services = { id = "com.google.gms.google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "12.1.1" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version = "1.22.0" }

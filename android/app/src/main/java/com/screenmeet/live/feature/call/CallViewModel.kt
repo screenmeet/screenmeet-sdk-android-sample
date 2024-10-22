@@ -22,9 +22,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CallViewModel @Inject constructor(
-    private val navigationDispatcher: NavigationDispatcher
-) : ViewModel() {
+class CallViewModel @Inject constructor(private val navigationDispatcher: NavigationDispatcher) :
+    ViewModel() {
 
     private val controlsDisplayTime = 5000L
 

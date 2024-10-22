@@ -10,13 +10,12 @@ import com.screenmeet.live.databinding.ItemFeatureBinding
 
 typealias onItemClick = (Pair<String, Int>) -> Unit
 
-class FeatureAdapter(
-    private val click: onItemClick
-) : ListAdapter<Pair<String, Int>, FeatureAdapter.ViewHolder>(FeatureComparator()) {
+class FeatureAdapter(private val click: onItemClick) :
+    ListAdapter<Pair<String, Int>, FeatureAdapter.ViewHolder>(FeatureComparator()) {
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(ItemFeatureBinding.inflate(LayoutInflater.from(viewGroup.context)))
-    }
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
+        ItemFeatureBinding.inflate(LayoutInflater.from(viewGroup.context))
+    )
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val item = getItem(position)

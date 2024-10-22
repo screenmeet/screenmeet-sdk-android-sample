@@ -12,9 +12,8 @@ import com.screenmeet.sdk.Participant
 
 typealias ActionClick = (Participant) -> Unit
 
-class PeopleAdapter(
-    private val clickListener: ActionClick
-) : ListAdapter<Participant, PeopleAdapter.ViewHolder>(ParticipantComparator()) {
+class PeopleAdapter(private val clickListener: ActionClick) :
+    ListAdapter<Participant, PeopleAdapter.ViewHolder>(ParticipantComparator()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context
@@ -45,12 +44,10 @@ class PeopleAdapter(
     }
 
     internal class ParticipantComparator : DiffUtil.ItemCallback<Participant>() {
-        override fun areItemsTheSame(oldItem: Participant, newItem: Participant): Boolean {
-            return oldItem.id == newItem.id
-        }
+        override fun areItemsTheSame(oldItem: Participant, newItem: Participant): Boolean =
+            oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: Participant, newItem: Participant): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: Participant, newItem: Participant): Boolean =
+            oldItem == newItem
     }
 }

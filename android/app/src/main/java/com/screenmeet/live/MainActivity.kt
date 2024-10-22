@@ -25,6 +25,7 @@ import com.screenmeet.sdk.Participant
 import com.screenmeet.sdk.ScreenMeet
 import com.screenmeet.sdk.SessionEventListener
 import com.screenmeet.sdk.VideoElement
+import com.screenmeet.sdk.RemoteControlCommand
 import dagger.hilt.android.AndroidEntryPoint
 import dev.chrisbanes.insetter.applyInsetter
 import kotlinx.coroutines.launch
@@ -169,18 +170,21 @@ class MainActivity : AppCompatActivity() {
             displayWidgetIfNeeded()
         }
 
-
-        override fun onScreenShareRequest(participant: Participant) {
+        override fun onScreenShareRequest(participant: Participant): Boolean {
             SupportApplication.instance?.let { app ->
                 if (SupportApplication.inBackground) {
-                    Toast.makeText(app,
+                    Toast.makeText(
+                        app,
                         getString(
                             R.string.background_screenshare_request,
                             participant.identity.name,
                             app.getString(R.string.app_name)
-                        ), Toast.LENGTH_LONG).show()
+                        ),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
+            return true
         }
     }
 
@@ -189,10 +193,10 @@ class MainActivity : AppCompatActivity() {
 
         val currentDestinationId = navController.currentDestination?.id
         val shouldHideWidget = currentDestinationId == R.id.fragmentConnect ||
-                currentDestinationId == R.id.fragmentVideoCall ||
-                currentDestinationId == R.id.fragmentChat ||
-                currentDestinationId == R.id.fragmentCallMore ||
-                currentDestinationId == R.id.fragmentPeople
+            currentDestinationId == R.id.fragmentVideoCall ||
+            currentDestinationId == R.id.fragmentChat ||
+            currentDestinationId == R.id.fragmentCallMore ||
+            currentDestinationId == R.id.fragmentPeople
 
         if (!shouldHideWidget || SupportApplication.inBackground) {
             var activeSpeaker = ScreenMeet.currentActiveSpeaker()
@@ -214,7 +218,7 @@ class MainActivity : AppCompatActivity() {
     private fun isOwnScreenShare(videoElement: VideoElement): Boolean {
         val localParticipant = ScreenMeet.localParticipant()
         return videoElement.participantId == localParticipant.id &&
-                videoElement.sourceType == ScreenMeet.VideoSource.Screen
+            videoElement.sourceType == ScreenMeet.VideoSource.Screen
     }
 
     private fun updateHeader() {

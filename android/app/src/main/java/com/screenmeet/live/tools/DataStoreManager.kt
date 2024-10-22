@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
-
 val Context.getDataStore: DataStore<Preferences> by preferencesDataStore(
     name = BuildConfig.APPLICATION_ID
 )
@@ -30,11 +29,7 @@ class DataStoreManager @Inject constructor(@ApplicationContext val context: Cont
             }
         }
 
-    suspend fun setConnectionPrefs(
-        endpoint: String,
-        serverTag: String,
-        apiKey: String,
-    ) {
+    suspend fun setConnectionPrefs(endpoint: String, serverTag: String, apiKey: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.URL_ENDPOINT] = endpoint
             preferences[PreferencesKeys.SERVER_TAG] = serverTag
@@ -49,7 +44,6 @@ class DataStoreManager @Inject constructor(@ApplicationContext val context: Cont
         val apiKey = prefs[PreferencesKeys.API_KEY]?.ifEmpty { null }
         return Triple(endpoint, tag, apiKey)
     }
-
 
     private object PreferencesKeys {
         val URL_ENDPOINT = stringPreferencesKey("endpoint")

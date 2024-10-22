@@ -5,10 +5,8 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 
-class ParticipantsGridItemDecoration(
-    private val spanCount: Int,
-    private val spacing: Int
-) : ItemDecoration() {
+class ParticipantsGridItemDecoration(private val spanCount: Int, private val spacing: Int) :
+    ItemDecoration() {
 
     override fun getItemOffsets(
         outRect: Rect,

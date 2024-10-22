@@ -19,7 +19,7 @@ class FragmentViewBindingDelegate<T : ViewBinding>(
 
     init {
         fragment.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            @Suppress("ktlint:experimental:property-naming")
+            @Suppress("ktlint:standard:property-naming")
             val viewLifecycleOwnerLiveDataObserver =
                 Observer<LifecycleOwner?> {
                     val viewLifecycleOwner = it ?: return@Observer

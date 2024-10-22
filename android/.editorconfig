@@ -1,7 +1,7 @@
 [*.{kt,kts}]
 ij_kotlin_allow_trailing_comma_on_call_site = false
 ij_kotlin_allow_trailing_comma = false
-ktlint_code_style = android
+ktlint_code_style = android_studio
 ktlint_standard = enabled
 ktlint_experimental = enabled
 ktlint_standard_import-ordering = disabled
